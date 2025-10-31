@@ -1,0 +1,27 @@
+# Virtual environments
+.venv*
+
+# Python
+__pycache__
+*.py[cod]
+
+# Node
+node_modules/
+.pnpm-debug.log
+
+# Build artifacts
+/dist/
+/.parcel-cache/
+
+# Environment files
+.env
+.env.*
+backend/.env
+frontend/.env
+
+# Project metadata
+plan.md
+
+# IDE
+.idea/
+.vscode/

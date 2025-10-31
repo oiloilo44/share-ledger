@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "share-ledger-backend"
+version = "0.1.0"
+description = "ShareLedger backend service"
+authors = ["ShareLedger Team <dev@shareledger.app>"]
+readme = "README.md"
+packages = [{ include = "app" }]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.115.0"
+uvicorn = { extras = ["standard"], version = "^0.32.0" }
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.0"
+httpx = "^0.27.0"
+ruff = "^0.6.5"
+black = "^24.8.0"
+
+[build-system]
+requires = ["poetry-core>=1.8.0"]
+build-backend = "poetry.core.masonry.api"

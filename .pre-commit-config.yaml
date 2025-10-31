@@ -1,0 +1,29 @@
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.5
+    hooks:
+      - id: ruff
+      - id: ruff-format
+  - repo: https://github.com/psf/black
+    rev: 24.8.0
+    hooks:
+      - id: black
+  - repo: local
+    hooks:
+      - id: frontend-eslint
+        name: frontend eslint
+        entry: pnpm --filter frontend lint
+        language: system
+        files: "\\.(ts|tsx|js|jsx)$"
+        pass_filenames: false
+      - id: frontend-prettier
+        name: frontend prettier
+        entry: pnpm --filter frontend format
+        language: system
+        files: "\\.(ts|tsx|js|jsx|json|css|scss|md)$"
+        pass_filenames: false
+      - id: lint-staged
+        name: lint-staged verification
+        entry: pnpm lint-staged --no-stash
+        language: system
+        pass_filenames: false
