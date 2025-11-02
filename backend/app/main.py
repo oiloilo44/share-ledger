@@ -7,6 +7,7 @@ from fastapi.responses import JSONResponse
 
 from .config import get_settings
 from .db import get_supabase_client
+from .routers.auth import router as auth_router
 
 logger = logging.getLogger("shareledger.api")
 
@@ -47,6 +48,8 @@ def create_app() -> FastAPI:
             status_code=422,
             content={"detail": exc.errors()},
         )
+
+    app.include_router(auth_router)
 
     return app
 

@@ -38,7 +38,16 @@
    pnpm install
    ```
 
-3. **pre-commit / husky 설치**
+3. **환경 변수 구성**
+
+   ```bash
+   cp .env.example .env
+   ```
+
+   - `SHARELEDGER_SUPABASE_URL`, `SHARELEDGER_SUPABASE_SERVICE_ROLE_KEY`, `SHARELEDGER_CORS_ORIGINS` 값을 프로젝트 환경에 맞게 채웁니다.
+   - 필요 시 `backend/.env`를 별도로 두고 싶다면 동일한 값을 복사해 사용할 수 있습니다.
+
+4. **pre-commit / husky 설치**
 
    ```bash
    pnpm dlx husky init
@@ -48,9 +57,14 @@
    - 커밋 전에 자동으로 ruff, black, ESLint, Prettier가 실행됩니다.
    - lint-staged 설정은 프런트엔드 파일을 pnpm 스크립트와 동일한 옵션으로 정리합니다.
 
-4. **개발 서버 실행**
+5. **개발 서버 실행**
    - 백엔드: `uv run --python .venv-backend/bin/python backend/app/main.py`
    - 프런트엔드: `pnpm --filter frontend dev`
+
+## 테스트
+
+- 백엔드 단위 및 통합 테스트: `.venv-backend/bin/python -m pytest`
+  - `backend/tests/test_auth_service.py`는 Supabase Auth REST 호출을 MockTransport로 검증합니다.
 
 ## Supabase
 

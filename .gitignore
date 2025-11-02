@@ -4,6 +4,7 @@
 # Python
 __pycache__
 *.py[cod]
+uv.lock
 
 # Node
 node_modules/

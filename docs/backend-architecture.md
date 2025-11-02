@@ -9,11 +9,14 @@
 
 ## 모듈 구조
 
-| 모듈        | 책임                                                     |
-| ----------- | -------------------------------------------------------- |
-| `config.py` | 환경 변수 로딩, CORS 설정 등 전역 설정 관리              |
-| `db.py`     | Supabase Python 클라이언트 초기화 및 FastAPI 의존성 주입 |
-| `main.py`   | FastAPI 인스턴스 생성, 미들웨어/라우터/예외 핸들러 등록  |
+| 모듈               | 책임                                                     |
+| ------------------ | -------------------------------------------------------- |
+| `config.py`        | 환경 변수 로딩, CORS 설정 등 전역 설정 관리              |
+| `db.py`            | Supabase Python 클라이언트 초기화 및 FastAPI 의존성 주입 |
+| `services/auth.py` | Supabase Auth REST API 연동, 토큰 검증 의존성 제공       |
+| `routers/auth.py`  | 인증 관련 라우터(`/auth/*`) 및 요청/응답 스키마 연결     |
+| `schemas/auth.py`  | 인증 도메인 전용 Pydantic 스키마 정의                    |
+| `main.py`          | FastAPI 인스턴스 생성, 미들웨어/라우터/예외 핸들러 등록  |
 
 ### config.py
 
@@ -36,12 +39,25 @@
 - 공통 예외 핸들러:
   - `RequestValidationError`: 422 상태 코드와 상세 오류 목록 반환.
   - 일반 `Exception`: 로그 기록 후 500 상태 코드와 표준 메시지 반환.
+- `routers/auth.py`의 라우터를 포함해 인증 관련 엔드포인트를 노출한다.
+
+### services/auth.py
+
+- Supabase Auth REST 엔드포인트(`/auth/v1/*`)를 호출하기 위해 `httpx.AsyncClient`를 사용한다.
+- 회원가입, 로그인, 로그아웃, 토큰 기반 사용자 조회 기능을 제공한다.
+- FastAPI 의존성 `get_current_user`를 통해 Bearer 토큰을 검증하고 사용자 정보를 반환한다.
+
+### schemas/auth.py
+
+- Supabase Auth 응답을 내부 모델(`AuthSession`, `SupabaseUser`)로 매핑한다.
+- 요청 본문(`SignUpRequest`, `SignInRequest`, `SignOutRequest`)과 정적 응답(`PasswordHelpResponse`)을 정의한다.
 
 ## 의존성 흐름
 
 1. `main.py` → `config.py`: 앱 생성 시 환경 설정을 로드해 CORS, 리스너 설정에 사용.
 2. `main.py` → `db.py`: 헬스 체크 및 향후 라우터에서 Supabase 클라이언트 의존성으로 활용.
-3. `db.py` → `config.py`: Supabase 연결을 위한 URL/Key 값을 설정에서 읽어온다.
+3. `main.py` → `routers/auth.py` → `services/auth.py`: 인증 라우트에서 Supabase Auth 연동 서비스를 호출한다.
+4. `services/auth.py` → `config.py`: Supabase Auth REST 호출에 필요한 URL과 Service Role 키를 읽어온다.
 
 ## 향후 확장 시 고려사항
 
