@@ -10,6 +10,13 @@ from .books import (
     BookRole,
     BookUpdate,
 )
+from .entries import (
+    Entry,
+    EntryCreate,
+    EntryHistoryAction,
+    EntryHistoryItem,
+    EntryUpdate,
+)
 
 __all__ = [
     "Book",
@@ -20,4 +27,9 @@ __all__ = [
     "BookMemberUpdate",
     "BookRole",
     "BookUpdate",
+    "Entry",
+    "EntryCreate",
+    "EntryHistoryAction",
+    "EntryHistoryItem",
+    "EntryUpdate",
 ]

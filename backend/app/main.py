@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 
 from fastapi import FastAPI, Request
@@ -9,6 +11,8 @@ from .config import get_settings
 from .db import get_supabase_client
 from .routers.auth import router as auth_router
 from .routers.books import router as books_router
+from .routers.entries import history_router as entry_history_router
+from .routers.entries import router as entries_router
 
 logger = logging.getLogger("shareledger.api")
 
@@ -52,6 +56,8 @@ def create_app() -> FastAPI:
 
     app.include_router(auth_router)
     app.include_router(books_router)
+    app.include_router(entries_router)
+    app.include_router(entry_history_router)
 
     return app
 
