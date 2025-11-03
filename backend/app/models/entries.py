@@ -7,7 +7,7 @@ from enum import Enum
 from typing import Any
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class Entry(BaseModel):
@@ -29,8 +29,16 @@ class EntryCreate(BaseModel):
 
     entry_date: date
     description: str = Field(min_length=1, max_length=200)
-    amount: int = Field(description="금액(단위: 원)", ne=0)
+    amount: int = Field(description="금액(단위: 원)")
     category: str | None = Field(default=None, max_length=80)
+
+    @field_validator("amount")
+    @classmethod
+    def amount_must_not_be_zero(cls, v: int) -> int:
+        """금액은 0이 될 수 없습니다."""
+        if v == 0:
+            raise ValueError("금액은 0이 될 수 없습니다")
+        return v
 
 
 class EntryUpdate(BaseModel):
@@ -38,8 +46,16 @@ class EntryUpdate(BaseModel):
 
     entry_date: date
     description: str = Field(min_length=1, max_length=200)
-    amount: int = Field(description="금액(단위: 원)", ne=0)
+    amount: int = Field(description="금액(단위: 원)")
     category: str | None = Field(default=None, max_length=80)
+
+    @field_validator("amount")
+    @classmethod
+    def amount_must_not_be_zero(cls, v: int) -> int:
+        """금액은 0이 될 수 없습니다."""
+        if v == 0:
+            raise ValueError("금액은 0이 될 수 없습니다")
+        return v
 
 
 class EntryHistoryAction(str, Enum):

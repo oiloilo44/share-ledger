@@ -14,11 +14,12 @@
 
 ```bash
 # Install dependencies
-uv pip install --python .venv-backend/bin/python -r backend/requirements-dev.txt
+uv venv backend/.venv
+uv sync --python backend/.venv/bin/python --extra dev
 pnpm install
 
 # Run services
-uv run --python .venv-backend/bin/python uvicorn app.main:app --reload
+uv run --python backend/.venv/bin/python uvicorn app.main:app --reload
 pnpm --filter frontend dev
 
 # Quality gates

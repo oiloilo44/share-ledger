@@ -24,9 +24,18 @@ export function formatAmount(amount: number): string {
  * 콤마가 포함된 문자열을 숫자로 변환
  * @example parseCurrency("1,234,567") // 1234567
  */
-export function parseCurrency(value: string): number {
-  const cleaned = value.replace(/[^\d-]/g, '');
-  return cleaned ? parseInt(cleaned, 10) : 0;
+export function parseCurrency(value: string): number | null {
+  if (!value) {
+    return null;
+  }
+
+  const normalized = value.replace(/,/g, '').trim();
+  if (normalized === '' || normalized === '-') {
+    return null;
+  }
+
+  const parsed = Number(normalized);
+  return Number.isNaN(parsed) ? null : parsed;
 }
 
 /**

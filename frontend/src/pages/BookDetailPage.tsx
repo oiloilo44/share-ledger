@@ -30,13 +30,7 @@ import { useBooks } from '../hooks/useBooks';
 import { useEntries, useCreateEntry, useUpdateEntry, useDeleteEntry } from '../hooks/useEntries';
 import type { Entry, EntryCreate } from '../types/entries';
 import { APIError } from '../lib/api';
-import {
-  formatAmount,
-  formatCurrency,
-  parseCurrency,
-  sanitizeNumberInput,
-  toISODateString,
-} from '../lib/format';
+import { formatAmount, parseCurrency, sanitizeNumberInput, toISODateString } from '../lib/format';
 
 type EntryDialogMode = 'create' | 'edit' | null;
 
@@ -119,7 +113,7 @@ export const BookDetailPage = () => {
       setFormData({
         entry_date: entry.entry_date,
         description: entry.description,
-        amount: String(Math.abs(entry.amount)),
+        amount: String(entry.amount),
         category: entry.category || '',
       });
     } else {
@@ -143,7 +137,7 @@ export const BookDetailPage = () => {
 
   const handleSubmit = async () => {
     const amountValue = parseCurrency(formData.amount);
-    if (!formData.description.trim() || amountValue === 0) return;
+    if (!formData.description.trim() || amountValue === null || amountValue === 0) return;
 
     const payload: EntryCreate = {
       entry_date: formData.entry_date,
@@ -178,6 +172,8 @@ export const BookDetailPage = () => {
       console.error('내역 삭제 실패:', error);
     }
   };
+
+  const parsedAmount = parseCurrency(formData.amount);
 
   if (isLoading) {
     return (
@@ -330,7 +326,7 @@ export const BookDetailPage = () => {
             <TextField
               label="금액 (원)"
               fullWidth
-              value={formData.amount ? formatCurrency(parseCurrency(formData.amount)) : ''}
+              value={formData.amount}
               onChange={(e) => handleAmountChange(e.target.value)}
               placeholder="예: 50000 (양수: 수입, 음수: 지출)"
               helperText="음수를 입력하면 지출, 양수를 입력하면 수입으로 기록됩니다"
@@ -363,8 +359,9 @@ export const BookDetailPage = () => {
             variant="contained"
             disabled={
               !formData.description.trim() ||
-              !formData.amount ||
-              parseCurrency(formData.amount) === 0 ||
+              formData.amount.trim() === '' ||
+              parsedAmount === null ||
+              parsedAmount === 0 ||
               createEntry.isPending ||
               updateEntry.isPending
             }

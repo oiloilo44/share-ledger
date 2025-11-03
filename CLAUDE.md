@@ -14,16 +14,17 @@ ShareLedger는 개인 및 공동 재무 관리를 위한 협업 가계부 웹 �
 
 ```bash
 # 가상환경 생성 및 의존성 설치
-uv venv .venv-backend
-uv pip install --python .venv-backend/bin/python -r backend/requirements-dev.txt
+cd backend
+uv venv .venv
+uv sync --python .venv/bin/python --extra dev
 
 # 개발 서버 실행
-uv run --python .venv-backend/bin/python uvicorn app.main:app --reload
+uv run --python .venv/bin/python uvicorn app.main:app --reload
 
 # 테스트 실행
-.venv-backend/bin/python -m pytest
-.venv-backend/bin/python -m pytest backend/tests/test_specific.py  # 특정 테스트만
-.venv-backend/bin/python -m pytest -k test_function_name          # 함수명으로 필터
+.venv/bin/python -m pytest
+.venv/bin/python -m pytest tests/test_specific.py  # 특정 테스트만
+.venv/bin/python -m pytest -k test_function_name   # 함수명으로 필터
 ```
 
 ### Frontend
@@ -181,7 +182,7 @@ src/
 
 - **Supabase SDK 호환성**: `supabase-py` + httpx 조합에서 일부 런타임 패치 필요 (현재 `db.py`에서 처리)
 - **트랜잭션 처리**: Postgres 트랜잭션은 Supabase RPC 함수로 구현 (`infra/migrations/0002_entry_history_rpc.sql`)
-- **테스트 실행**: 반드시 `.venv-backend/bin/python -m pytest` 형태로 실행 (경로 문제 방지)
+- **테스트 실행**: 반드시 `backend` 디렉터리에서 `.venv/bin/python -m pytest` 형태로 실행 (경로 문제 방지)
 
 ### Frontend
 

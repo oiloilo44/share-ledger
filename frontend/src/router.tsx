@@ -21,7 +21,6 @@ export const appRouter = createBrowserRouter([
     element: <ProtectedRoute />,
     children: [
       {
-        path: '/',
         element: <RootLayout />,
         children: [
           {

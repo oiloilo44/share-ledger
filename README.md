@@ -26,11 +26,11 @@
 1. **Python 의존성 설치**
 
    ```bash
-   uv venv .venv-backend
-   uv pip install --python .venv-backend/bin/python -r backend/requirements-dev.txt
+   uv venv backend/.venv
+   uv sync --python backend/.venv/bin/python --extra dev
    ```
 
-   > `uv run --python .venv-backend/bin/python`으로 FastAPI 앱을 실행하세요.
+   > `uv run --python backend/.venv/bin/python`으로 FastAPI 앱을 실행하세요.
 
 2. **Node 패키지 설치**
 
@@ -75,12 +75,12 @@
    - lint-staged 설정은 프런트엔드 파일을 pnpm 스크립트와 동일한 옵션으로 정리합니다.
 
 5. **개발 서버 실행**
-   - 백엔드: `uv run --python .venv-backend/bin/python backend/app/main.py`
+   - 백엔드: `uv run --python backend/.venv/bin/python backend/app/main.py`
    - 프런트엔드: `pnpm --filter frontend dev`
 
 ## 테스트
 
-- 백엔드 단위 및 통합 테스트: `.venv-backend/bin/python -m pytest`
+- 백엔드 단위 및 통합 테스트: `backend/.venv/bin/python -m pytest`
   - `backend/tests/test_auth_service.py`는 Supabase Auth REST 호출을 MockTransport로 검증합니다.
 
 ## Supabase
