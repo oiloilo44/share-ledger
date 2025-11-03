@@ -17,6 +17,11 @@ httpx = "^0.27.0"
 ruff = "^0.6.5"
 black = "^24.8.0"
 
+[tool.pytest.ini_options]
+markers = [
+    "integration: Supabase 실환경과 상호작용하는 테스트",
+]
+
 [build-system]
 requires = ["poetry-core>=1.8.0"]
 build-backend = "poetry.core.masonry.api"
