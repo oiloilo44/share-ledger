@@ -4,6 +4,7 @@ import { LoginPage } from './pages/LoginPage';
 import { SignupPage } from './pages/SignupPage';
 import { BooksPage } from './pages/BooksPage';
 import { BookDetailPage } from './pages/BookDetailPage';
+import { HistoryPage } from './pages/HistoryPage';
 import { RootLayout } from './components/RootLayout';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
@@ -34,6 +35,10 @@ export const appRouter = createBrowserRouter([
           {
             path: 'books/:bookId',
             element: <BookDetailPage />,
+          },
+          {
+            path: 'books/:bookId/history',
+            element: <HistoryPage />,
           },
         ],
       },
