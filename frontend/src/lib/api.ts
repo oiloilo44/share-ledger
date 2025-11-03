@@ -12,6 +12,7 @@ import type {
   BookMemberInvite,
   BookMemberUpdate,
 } from '../types/books';
+import type { Entry, EntryCreate, EntryUpdate, EntryHistoryItem } from '../types/entries';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
@@ -149,6 +150,74 @@ export const booksApi = {
       headers,
     });
     return handleResponse<void>(response);
+  },
+};
+
+// Entries API
+export const entriesApi = {
+  async list(bookId: string): Promise<Entry[]> {
+    const headers = await getAuthHeaders();
+    const response = await fetch(`${API_BASE_URL}/books/${bookId}/entries`, {
+      method: 'GET',
+      headers,
+    });
+    return handleResponse<Entry[]>(response);
+  },
+
+  async get(bookId: string, entryId: string): Promise<Entry> {
+    const headers = await getAuthHeaders();
+    const response = await fetch(`${API_BASE_URL}/books/${bookId}/entries/${entryId}`, {
+      method: 'GET',
+      headers,
+    });
+    return handleResponse<Entry>(response);
+  },
+
+  async create(bookId: string, data: EntryCreate): Promise<Entry> {
+    const headers = await getAuthHeaders();
+    const response = await fetch(`${API_BASE_URL}/books/${bookId}/entries`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(data),
+    });
+    return handleResponse<Entry>(response);
+  },
+
+  async update(bookId: string, entryId: string, data: EntryUpdate): Promise<Entry> {
+    const headers = await getAuthHeaders();
+    const response = await fetch(`${API_BASE_URL}/books/${bookId}/entries/${entryId}`, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify(data),
+    });
+    return handleResponse<Entry>(response);
+  },
+
+  async delete(bookId: string, entryId: string): Promise<void> {
+    const headers = await getAuthHeaders();
+    const response = await fetch(`${API_BASE_URL}/books/${bookId}/entries/${entryId}`, {
+      method: 'DELETE',
+      headers,
+    });
+    return handleResponse<void>(response);
+  },
+
+  async listHistory(bookId: string): Promise<EntryHistoryItem[]> {
+    const headers = await getAuthHeaders();
+    const response = await fetch(`${API_BASE_URL}/books/${bookId}/history`, {
+      method: 'GET',
+      headers,
+    });
+    return handleResponse<EntryHistoryItem[]>(response);
+  },
+
+  async revertHistory(historyId: string): Promise<Entry> {
+    const headers = await getAuthHeaders();
+    const response = await fetch(`${API_BASE_URL}/history/${historyId}/revert`, {
+      method: 'POST',
+      headers,
+    });
+    return handleResponse<Entry>(response);
   },
 };
 

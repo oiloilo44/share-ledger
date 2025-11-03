@@ -3,6 +3,7 @@ import { DashboardPage } from './pages/DashboardPage';
 import { LoginPage } from './pages/LoginPage';
 import { SignupPage } from './pages/SignupPage';
 import { BooksPage } from './pages/BooksPage';
+import { BookDetailPage } from './pages/BookDetailPage';
 import { RootLayout } from './components/RootLayout';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
@@ -30,6 +31,10 @@ export const appRouter = createBrowserRouter([
           {
             path: 'books',
             element: <BooksPage />,
+          },
+          {
+            path: 'books/:bookId',
+            element: <BookDetailPage />,
           },
         ],
       },

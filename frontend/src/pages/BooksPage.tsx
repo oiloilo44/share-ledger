@@ -4,6 +4,7 @@
  */
 
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Button,
@@ -47,6 +48,7 @@ const roleColors: Record<BookRole, 'primary' | 'default'> = {
 };
 
 export const BooksPage = () => {
+  const navigate = useNavigate();
   const { data: books, isLoading, error } = useBooks();
   const createBook = useCreateBook();
   const updateBook = useUpdateBook();
@@ -196,7 +198,12 @@ export const BooksPage = () => {
                   </Typography>
                 </CardContent>
                 <CardActions>
-                  <Button size="small" fullWidth variant="outlined">
+                  <Button
+                    size="small"
+                    fullWidth
+                    variant="outlined"
+                    onClick={() => navigate(`/books/${book.id}`)}
+                  >
                     내역 보기
                   </Button>
                 </CardActions>
