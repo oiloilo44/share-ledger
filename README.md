@@ -40,12 +40,29 @@
 
 3. **환경 변수 구성**
 
+   백엔드와 프론트엔드는 각각 독립적인 환경 변수를 사용합니다.
+
+   **백엔드 환경 변수**:
+
    ```bash
-   cp .env.example .env
+   cp backend/.env.example backend/.env
    ```
 
-   - `SHARELEDGER_SUPABASE_URL`, `SHARELEDGER_SUPABASE_SERVICE_ROLE_KEY`, `SHARELEDGER_CORS_ORIGINS` 값을 프로젝트 환경에 맞게 채웁니다.
-   - 필요 시 `backend/.env`를 별도로 두고 싶다면 동일한 값을 복사해 사용할 수 있습니다.
+   `backend/.env`에 다음 값을 설정:
+   - `SHARELEDGER_SUPABASE_URL`: Supabase 프로젝트 REST URL
+   - `SHARELEDGER_SUPABASE_SERVICE_ROLE_KEY`: Service Role 키 (민감 정보)
+   - `SHARELEDGER_CORS_ORIGINS`: CORS 허용 도메인
+
+   **프론트엔드 환경 변수**:
+
+   ```bash
+   cp frontend/.env.example frontend/.env
+   ```
+
+   `frontend/.env`에 다음 값을 설정:
+   - `VITE_SUPABASE_URL`: Supabase 프로젝트 URL (백엔드와 동일)
+   - `VITE_SUPABASE_ANON_KEY`: Supabase Anon 키 (클라이언트용 공개 키)
+   - `VITE_API_URL`: 백엔드 API URL (기본값: `http://localhost:8000`)
 
 4. **pre-commit / husky 설치**
 

@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     """프로젝트 환경 변수 설정."""
 
     model_config = SettingsConfigDict(
-        env_file=(".env", "backend/.env"),
+        env_file="backend/.env",
         env_file_encoding="utf-8",
         env_prefix="SHARELEDGER_",
         extra="ignore",
