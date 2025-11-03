@@ -2,6 +2,7 @@ import { createBrowserRouter } from 'react-router-dom';
 import { DashboardPage } from './pages/DashboardPage';
 import { LoginPage } from './pages/LoginPage';
 import { SignupPage } from './pages/SignupPage';
+import { BooksPage } from './pages/BooksPage';
 import { RootLayout } from './components/RootLayout';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
@@ -25,6 +26,10 @@ export const appRouter = createBrowserRouter([
           {
             index: true,
             element: <DashboardPage />,
+          },
+          {
+            path: 'books',
+            element: <BooksPage />,
           },
         ],
       },

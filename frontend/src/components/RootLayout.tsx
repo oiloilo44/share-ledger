@@ -2,13 +2,17 @@ import { AppBar, Box, Container, IconButton, Toolbar, Typography, Button } from 
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 import LogoutIcon from '@mui/icons-material/Logout';
-import { Outlet } from 'react-router-dom';
+import MenuBookIcon from '@mui/icons-material/MenuBook';
+import HomeIcon from '@mui/icons-material/Home';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useUIStore } from '../stores/uiStore';
 import { useAuthStore } from '../stores/authStore';
 
 export const RootLayout = () => {
   const { themeMode, toggleTheme } = useUIStore();
   const { signOut, user } = useAuthStore();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogout = async () => {
     await signOut();
@@ -18,9 +22,36 @@ export const RootLayout = () => {
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <AppBar position="sticky" color="primary" enableColorOnDark>
         <Toolbar>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+          <Typography
+            variant="h6"
+            component="div"
+            sx={{ cursor: 'pointer' }}
+            onClick={() => navigate('/')}
+          >
             ShareLedger
           </Typography>
+          <Box sx={{ flexGrow: 1, ml: 3, display: 'flex', gap: 1 }}>
+            <Button
+              color="inherit"
+              startIcon={<HomeIcon />}
+              onClick={() => navigate('/')}
+              sx={{
+                fontWeight: location.pathname === '/' ? 'bold' : 'normal',
+              }}
+            >
+              홈
+            </Button>
+            <Button
+              color="inherit"
+              startIcon={<MenuBookIcon />}
+              onClick={() => navigate('/books')}
+              sx={{
+                fontWeight: location.pathname === '/books' ? 'bold' : 'normal',
+              }}
+            >
+              가계부
+            </Button>
+          </Box>
           {user && (
             <Typography variant="body2" sx={{ mr: 2 }}>
               {user.email}

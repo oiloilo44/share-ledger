@@ -1,0 +1,209 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Project Overview
+
+ShareLedger는 개인 및 공동 재무 관리를 위한 협업 가계부 웹 애플리케이션입니다. FastAPI 백엔드, React PWA 프론트엔드, Supabase BaaS로 구성된 모놀리포 프로젝트입니다.
+
+**중요**: 모든 커뮤니케이션과 문서는 반드시 한국어로 작성합니다.
+
+## Development Commands
+
+### Backend
+
+```bash
+# 가상환경 생성 및 의존성 설치
+uv venv .venv-backend
+uv pip install --python .venv-backend/bin/python -r backend/requirements-dev.txt
+
+# 개발 서버 실행
+uv run --python .venv-backend/bin/python uvicorn app.main:app --reload
+
+# 테스트 실행
+.venv-backend/bin/python -m pytest
+.venv-backend/bin/python -m pytest backend/tests/test_specific.py  # 특정 테스트만
+.venv-backend/bin/python -m pytest -k test_function_name          # 함수명으로 필터
+```
+
+### Frontend
+
+```bash
+# 의존성 설치 및 개발 서버
+pnpm install
+pnpm --filter frontend dev
+
+# 테스트 (추후 Vitest 사용 예정)
+pnpm --filter frontend test
+```
+
+### Quality & Formatting
+
+```bash
+# 전체 린트 및 포맷
+pnpm lint          # 모든 workspace 린트
+pnpm format        # 모든 workspace 포맷
+pre-commit run --all-files
+
+# pre-commit 훅 설치 (필수)
+pnpm dlx husky init
+pre-commit install
+```
+
+**중요**: 커밋 전 반드시 pre-commit 훅을 통과해야 하며, `--no-verify` 옵션으로 절대 건너뛰지 않습니다.
+
+## Core Architecture
+
+### Backend Structure (`backend/app/`)
+
+```
+app/
+├── main.py          # FastAPI 애플리케이션 생성, CORS, 예외 핸들러
+├── config.py        # Pydantic Settings (환경 변수: SHARELEDGER_* prefix)
+├── db.py            # Supabase 클라이언트 초기화 및 DI
+├── routers/         # API 엔드포인트 (auth, books, entries)
+├── services/        # 비즈니스 로직 (BookService, EntryService)
+├── models/          # Pydantic 스키마 (요청/응답 모델)
+└── schemas/         # 내부 데이터 구조 (SupabaseUser 등)
+```
+
+**핵심 패턴**:
+
+- **의존성 주입**: `get_supabase_client()`, `get_current_user()`, `get_book_service()` 등 FastAPI Depends 패턴 사용
+- **서비스 계층**: 각 도메인별 Service 클래스가 비즈니스 로직 담당 (예: `BookService`, `EntryService`)
+- **인증**: Supabase Auth REST API 래퍼 (`services/auth.py`), JWT Bearer 토큰 검증 (`get_current_user`)
+- **예외 처리**: 서비스 계층에서 `ServiceError` 발생 → 라우터에서 `raise_http_exception`으로 HTTP 예외 변환
+- **트랜잭션**: Supabase RPC 함수 사용 (예: `create_entry_with_history`, `restore_entry_from_history`)
+
+**테스트**:
+
+- `backend/tests/`: 단위 및 통합 테스트 (pytest)
+- `backend/tests/integration/`: Supabase 실환경 테스트 (환경 변수 없으면 자동 skip)
+- 인증 테스트는 `httpx.MockTransport`로 Supabase Auth REST 호출 모킹
+
+### Frontend Structure (`frontend/src/`)
+
+```
+src/
+├── main.tsx         # React 진입점
+├── App.tsx          # 최상위 컴포넌트
+├── router.tsx       # React Router 설정
+├── pages/           # 페이지 컴포넌트
+├── components/      # 재사용 UI 컴포넌트
+├── stores/          # Zustand 상태 관리 (예정)
+└── theme/           # MUI 테마 설정
+```
+
+**현재 상태**: 기본 구조만 있음 (React + Vite + MUI 템플릿). 인증 UI, 가계부 관리, 내역 CRUD, 히스토리 UI는 아직 미구현.
+
+**계획된 스택**:
+
+- **상태 관리**: Zustand (`authStore`, `booksStore`)
+- **데이터 페칭**: React Query
+- **실시간 동기화**: Supabase JS SDK Realtime (`realtime:books:{book_id}` 채널 구독)
+
+### Database & Supabase
+
+**스키마 (PostgreSQL)**:
+
+- `users` (Supabase Auth 스키마)
+- `account_books`: 가계부 (사용자당 최대 5개 제한)
+- `book_members`: 가계부 공유 멤버 (공유 가계부 최대 5개 제한)
+- `entries`: 수입/지출 내역
+- `entry_history`: 변경 이력 (가계부당 최대 100건 유지)
+- `recurring_entries`: 반복 내역 설정 (추후 구현)
+
+**제약 조건**:
+
+- 가계부 생성 제한: `enforce_book_limits()` 트리거
+- 히스토리 100건 제한: `prune_entry_history()` 트리거
+- 반복 내역 중복 방지: `check_recurring_conflict()` 함수
+
+**Supabase 작업 규칙**:
+
+- **절대** 로컬에서 직접 SQL 실행 금지
+- 모든 DDL 작업은 `infra/migrations/*.sql` 파일 작성 → Supabase MCP `apply_migration` 사용
+- 조회/DML은 Supabase Python/JS SDK 또는 MCP `execute_sql` 사용
+- 프로젝트 정보: `docs/supabase.md` 참조 (프로젝트 ID: `aluzsrazjvutvarvstci`)
+
+### Real-time Sync Architecture
+
+백엔드는 데이터 변경 시 `pg_notify('realtime:books:{book_id}', ...)` 호출하여 이벤트 발행.
+프론트엔드는 Supabase Realtime 채널 구독하여 실시간 동기화 (추후 구현 예정).
+
+## Coding Standards
+
+### Python (Backend)
+
+- **포맷터**: Ruff + Black (4-space, 100 chars, double quotes)
+- **Import 정렬**: `from __future__ import annotations` 최상단 배치
+- **타입 힌트**: 모든 함수 시그니처에 타입 힌트 필수
+- **설정 파일**: `ruff.toml`, `pyproject.toml`
+
+### TypeScript (Frontend)
+
+- **린터**: ESLint (TypeScript ESLint, React hooks, React Refresh)
+- **포맷터**: Prettier
+- **파일명**: PascalCase for components (`.tsx`), camelCase for utilities (`.ts`)
+
+### Commit & Git Workflow
+
+**Commit 메시지 형식**: `<type>(<scope>): <summary>`
+
+- 예: `feat(api): add entry history endpoints`, `chore: update dependencies`
+- AI 관련 표현 절대 금지
+- Git config: `user.name = "mp"`, `user.email = "mp@mp.mp"`
+
+**Before Commit**:
+
+1. pre-commit 훅 통과 확인 (ruff, black, ESLint, Prettier)
+2. `plan.md` 상태 갱신 (`⏳` → `✅`)
+3. 관련 테스트 실행 및 통과 확인
+
+**Note**: `plan.md`는 `.gitignore`에 포함되어 버전 관리 제외. 필요시 `docs/plans/`로 이동 후 커밋.
+
+## Environment Variables
+
+루트 `.env.example` 기반으로 `.env` 생성:
+
+- `SHARELEDGER_SUPABASE_URL`: Supabase 프로젝트 REST URL
+- `SHARELEDGER_SUPABASE_SERVICE_ROLE_KEY`: Service Role 키
+- `SHARELEDGER_CORS_ORIGINS`: CORS 허용 Origin (콤마 구분)
+
+프론트엔드 환경 변수 (추후):
+
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_ANON_KEY`
+
+## Known Quirks & Caveats
+
+### Backend
+
+- **Supabase SDK 호환성**: `supabase-py` + httpx 조합에서 일부 런타임 패치 필요 (현재 `db.py`에서 처리)
+- **트랜잭션 처리**: Postgres 트랜잭션은 Supabase RPC 함수로 구현 (`infra/migrations/0002_entry_history_rpc.sql`)
+- **테스트 실행**: 반드시 `.venv-backend/bin/python -m pytest` 형태로 실행 (경로 문제 방지)
+
+### Frontend
+
+- **실시간 동기화**: Supabase Realtime 채널 구독 시 `pg_notify` 이벤트 수신 구현 필요
+- **React Query**: Realtime 이벤트 수신 시 cache 무효화(`queryClient.invalidateQueries`)로 자동 리프레시
+
+### Supabase
+
+- **무료 플랜 제한**: 7일간 활동 없으면 프로젝트 일시 중지 (Keep-Alive 워크플로 예정)
+- **RLS 정책**: 현재 Service Role 키 사용으로 RLS 우회 중. 프로덕션 배포 시 RLS 정책 추가 필수
+
+## Key Business Rules
+
+1. **가계부 제한**: 사용자당 소유 가계부 최대 5개, 공유받은 가계부 최대 5개
+2. **히스토리 보존**: 가계부당 최신 100건의 변경 이력만 유지
+3. **역할 시스템**: OWNER (삭제 가능), EDITOR (수정 가능), VIEWER (조회만, 추후 구현)
+4. **복원 기능**: 히스토리에서 특정 시점 선택 → `restore_entry_from_history` RPC로 복원
+
+## Reference Documentation
+
+- `AGENTS.md`: 개발 가이드라인 및 pre-commit 설정
+- `spec.md`: 기술 명세서 (기능, API 엔드포인트, 스키마)
+- `plan.md`: 단계별 구현 로드맵 (gitignore됨, 버전 관리 안 함)
+- `README.md`: 빠른 시작 가이드
+- `docs/supabase.md`: Supabase 프로젝트 정보
