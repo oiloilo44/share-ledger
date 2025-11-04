@@ -7,12 +7,17 @@ import HomeIcon from '@mui/icons-material/Home';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useUIStore } from '../stores/uiStore';
 import { useAuthStore } from '../stores/authStore';
+import { ToastNotification } from './ToastNotification';
+import { useRealtimeBooksListSync } from '../hooks/useRealtimeSync';
 
 export const RootLayout = () => {
   const { themeMode, toggleTheme } = useUIStore();
   const { signOut, user } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
+
+  // 가계부 목록 실시간 동기화
+  useRealtimeBooksListSync();
 
   const handleLogout = async () => {
     await signOut();
@@ -73,6 +78,7 @@ export const RootLayout = () => {
           © {new Date().getFullYear()} ShareLedger
         </Typography>
       </Box>
+      <ToastNotification />
     </Box>
   );
 };

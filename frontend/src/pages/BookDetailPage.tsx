@@ -31,6 +31,7 @@ import { useEntries, useCreateEntry, useUpdateEntry, useDeleteEntry } from '../h
 import type { Entry, EntryCreate } from '../types/entries';
 import { APIError } from '../lib/api';
 import { formatAmount, parseCurrency, sanitizeNumberInput, toISODateString } from '../lib/format';
+import { useRealtimeBookSync } from '../hooks/useRealtimeSync';
 
 type EntryDialogMode = 'create' | 'edit' | null;
 
@@ -55,6 +56,9 @@ export const BookDetailPage = () => {
   const createEntry = useCreateEntry(bookId!);
   const updateEntry = useUpdateEntry(bookId!);
   const deleteEntry = useDeleteEntry(bookId!);
+
+  // 실시간 동기화
+  useRealtimeBookSync(bookId);
 
   const [dialogState, setDialogState] = useState<EntryDialogState>({ mode: null });
   const [formData, setFormData] = useState<EntryFormData>({

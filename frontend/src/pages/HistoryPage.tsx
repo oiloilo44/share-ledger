@@ -33,6 +33,7 @@ import { useHistory, useRevertHistory } from '../hooks/useHistory';
 import { EntryHistoryAction, type EntryHistoryItem } from '../types/entries';
 import { APIError } from '../lib/api';
 import { formatAmount } from '../lib/format';
+import { useRealtimeBookSync } from '../hooks/useRealtimeSync';
 
 /**
  * 액션 타입별 아이콘 반환
@@ -120,6 +121,9 @@ export const HistoryPage = () => {
   const { data: books } = useBooks();
   const { data: historyItems, isLoading, error } = useHistory(bookId!);
   const revertHistory = useRevertHistory(bookId!);
+
+  // 실시간 동기화
+  useRealtimeBookSync(bookId);
 
   const currentBook = books?.find((book) => book.id === bookId);
 

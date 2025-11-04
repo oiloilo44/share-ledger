@@ -40,6 +40,7 @@ import {
 import { BookRole, type BookMemberInvite } from '../types/books';
 import { APIError } from '../lib/api';
 import { useAuthStore } from '../stores/authStore';
+import { useRealtimeBookSync } from '../hooks/useRealtimeSync';
 
 interface InviteDialogState {
   open: boolean;
@@ -60,6 +61,9 @@ export const BookSettingsPage = () => {
   const inviteMember = useInviteMember(bookId!);
   const updateMemberRole = useUpdateMemberRole(bookId!);
   const removeMember = useRemoveMember(bookId!);
+
+  // 실시간 동기화
+  useRealtimeBookSync(bookId);
 
   const [inviteDialog, setInviteDialog] = useState<InviteDialogState>({ open: false });
   const [inviteForm, setInviteForm] = useState<InviteFormData>({
