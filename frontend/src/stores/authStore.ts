@@ -10,7 +10,10 @@ type AuthState = {
 
   // Actions
   initialize: () => Promise<void>;
-  signUp: (email: string, password: string) => Promise<{ error: Error | null }>;
+  signUp: (
+    email: string,
+    password: string,
+  ) => Promise<{ error: Error | null; requiresEmailConfirmation: boolean }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
 };
@@ -62,17 +65,22 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       });
 
       if (error) {
-        return { error };
+        return { error, requiresEmailConfirmation: false };
       }
 
+      const hasActiveSession = Boolean(data.session && data.user);
+
       set({
-        session: data.session,
-        user: data.user,
+        session: hasActiveSession ? data.session : null,
+        user: hasActiveSession ? data.user : null,
       });
 
-      return { error: null };
+      return {
+        error: null,
+        requiresEmailConfirmation: !hasActiveSession,
+      };
     } catch (error) {
-      return { error: error as Error };
+      return { error: error as Error, requiresEmailConfirmation: false };
     } finally {
       set({ isLoading: false });
     }

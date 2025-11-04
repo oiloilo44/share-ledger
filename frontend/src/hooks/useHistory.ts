@@ -11,7 +11,7 @@ import type { Entry, EntryHistoryItem } from '../types/entries';
  */
 export function useHistory(bookId: string) {
   return useQuery<EntryHistoryItem[], Error>({
-    queryKey: ['books', bookId, 'history'],
+    queryKey: ['entries', bookId, 'history'],
     queryFn: () => entriesApi.listHistory(bookId),
     enabled: !!bookId,
   });
@@ -27,8 +27,8 @@ export function useRevertHistory(bookId: string) {
     mutationFn: (historyId: string) => entriesApi.revertHistory(historyId),
     onSuccess: () => {
       // 성공 시 관련 쿼리 무효화하여 자동 리프레시
-      queryClient.invalidateQueries({ queryKey: ['books', bookId, 'entries'] });
-      queryClient.invalidateQueries({ queryKey: ['books', bookId, 'history'] });
+      queryClient.invalidateQueries({ queryKey: ['entries', bookId] });
+      queryClient.invalidateQueries({ queryKey: ['entries', bookId, 'history'] });
     },
   });
 }

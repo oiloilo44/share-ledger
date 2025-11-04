@@ -105,6 +105,8 @@ class BookService:
 
     async def create_book(self, user: SupabaseUser, payload: BookCreate) -> BookListItem:
         """가계부를 생성한다."""
+        await asyncio.to_thread(self._ensure_user_profile_sync, user)
+
         try:
             row = await asyncio.to_thread(self._create_book_sync, user.id, payload)
         except BookServiceError:
@@ -364,6 +366,21 @@ class BookService:
             raise
 
         return book_row
+
+    def _ensure_user_profile_sync(self, user: SupabaseUser) -> None:
+        payload: dict[str, Any] = {"id": str(user.id)}
+        if user.email:
+            payload["email"] = user.email
+        if user.full_name:
+            payload["full_name"] = user.full_name
+
+        try:
+            (self.client.table("users").upsert(payload, on_conflict="id").execute())
+        except PostgrestAPIError as exc:
+            raise BookServiceError(
+                "사용자 정보를 동기화하는 중 오류가 발생했습니다.",
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            ) from exc
 
     def _ensure_owner_sync(self, book_id: UUID, user_id: UUID) -> dict[str, Any]:
         response = (

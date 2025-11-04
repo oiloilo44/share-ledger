@@ -32,3 +32,6 @@ plan.md
 # IDE
 .idea/
 .vscode/
+
+# Development server logs
+.devserver/

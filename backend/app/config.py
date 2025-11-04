@@ -24,7 +24,10 @@ class Settings(BaseSettings):
         description="Supabase Service Role 키",
     )
     cors_origins: list[str] = Field(
-        default_factory=lambda: ["http://localhost:5173"],
+        default_factory=lambda: [
+            "http://localhost:5173",
+            "http://127.0.0.1:5173",
+        ],
         description="허용할 CORS Origin 목록",
     )
 

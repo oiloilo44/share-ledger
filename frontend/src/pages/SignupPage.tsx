@@ -21,12 +21,14 @@ export const SignupPage = () => {
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [requiresEmailConfirmation, setRequiresEmailConfirmation] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    setSuccess(false);
+    setSuccessMessage(null);
+    setRequiresEmailConfirmation(false);
 
     if (!email || !password || !passwordConfirm) {
       setError('모든 필드를 입력해주세요.');
@@ -43,17 +45,26 @@ export const SignupPage = () => {
       return;
     }
 
-    const { error: signUpError } = await signUp(email, password);
+    const { error: signUpError, requiresEmailConfirmation: needsConfirmation } = await signUp(
+      email,
+      password,
+    );
 
     if (signUpError) {
       setError(signUpError.message || '회원가입에 실패했습니다.');
       return;
     }
 
-    setSuccess(true);
+    setRequiresEmailConfirmation(needsConfirmation);
+    if (needsConfirmation) {
+      setSuccessMessage('회원가입이 완료되었습니다! 이메일로 전송된 인증 링크를 확인해주세요.');
+      return;
+    }
+
+    setSuccessMessage('회원가입이 완료되었습니다! 메인 페이지로 이동합니다...');
     setTimeout(() => {
       navigate('/');
-    }, 2000);
+    }, 1500);
   };
 
   return (
@@ -81,9 +92,16 @@ export const SignupPage = () => {
               </Alert>
             )}
 
-            {success && (
+            {successMessage && (
               <Alert severity="success" sx={{ mb: 2 }}>
-                회원가입이 완료되었습니다! 로그인 페이지로 이동합니다...
+                {successMessage}
+                {requiresEmailConfirmation && (
+                  <Box mt={1}>
+                    <Typography variant="body2" color="text.secondary">
+                      이메일 인증을 마치신 후 로그인 페이지에서 다시 로그인해주세요.
+                    </Typography>
+                  </Box>
+                )}
               </Alert>
             )}
 
@@ -99,7 +117,7 @@ export const SignupPage = () => {
                 autoFocus
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                disabled={isLoading || success}
+                disabled={isLoading || Boolean(successMessage)}
               />
               <TextField
                 margin="normal"
@@ -112,7 +130,7 @@ export const SignupPage = () => {
                 autoComplete="new-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                disabled={isLoading || success}
+                disabled={isLoading || Boolean(successMessage)}
                 helperText="최소 6자 이상"
               />
               <TextField
@@ -126,7 +144,7 @@ export const SignupPage = () => {
                 autoComplete="new-password"
                 value={passwordConfirm}
                 onChange={(e) => setPasswordConfirm(e.target.value)}
-                disabled={isLoading || success}
+                disabled={isLoading || Boolean(successMessage)}
               />
 
               <Button
@@ -134,10 +152,21 @@ export const SignupPage = () => {
                 fullWidth
                 variant="contained"
                 sx={{ mt: 3, mb: 2 }}
-                disabled={isLoading || success}
+                disabled={isLoading || Boolean(successMessage)}
               >
                 {isLoading ? '처리 중...' : '회원가입'}
               </Button>
+
+              {requiresEmailConfirmation && (
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  onClick={() => navigate('/login')}
+                  sx={{ mb: 2 }}
+                >
+                  로그인 페이지로 이동
+                </Button>
+              )}
 
               <Box sx={{ textAlign: 'center' }}>
                 <Typography variant="body2" color="text.secondary">

@@ -26,8 +26,8 @@ export function useRealtimeBookSync(bookId: string | undefined) {
     channel
       .on('broadcast', { event: 'entry_changed' }, () => {
         // 내역 목록 무효화하여 자동 리프레시
-        queryClient.invalidateQueries({ queryKey: ['books', bookId, 'entries'] });
-        queryClient.invalidateQueries({ queryKey: ['books', bookId, 'history'] });
+        queryClient.invalidateQueries({ queryKey: ['entries', bookId] });
+        queryClient.invalidateQueries({ queryKey: ['entries', bookId, 'history'] });
         showToast('내역이 변경되었습니다', 'info');
       })
       .on('broadcast', { event: 'member_changed' }, () => {
