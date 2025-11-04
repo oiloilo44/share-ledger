@@ -1,0 +1,31 @@
+Metadata-Version: 2.4
+Name: share-ledger-backend
+Version: 0.1.0
+Summary: ShareLedger backend service
+Author-email: ShareLedger Team <dev@shareledger.app>
+Requires-Python: <3.12,>=3.11
+Description-Content-Type: text/markdown
+Requires-Dist: fastapi==0.120.3
+Requires-Dist: uvicorn[standard]==0.38.0
+Requires-Dist: pydantic-settings==2.6.1
+Requires-Dist: supabase==2.3.1
+Requires-Dist: httpx==0.24.1
+Requires-Dist: email-validator==2.1.0.post1
+Provides-Extra: dev
+Requires-Dist: black==25.9.0; extra == "dev"
+Requires-Dist: ruff==0.14.3; extra == "dev"
+Requires-Dist: pytest==8.4.2; extra == "dev"
+Requires-Dist: pytest-dotenv==0.5.2; extra == "dev"
+Requires-Dist: pytest-cov==7.0.0; extra == "dev"
+
+# ShareLedger Backend
+
+FastAPI 기반 API 서비스. 애플리케이션 코드는 `app/` 디렉터리에 배치하며, `create_app()` 팩토리를 진입점으로 사용합니다.
+
+## 개발
+
+```bash
+uv venv .venv
+uv sync --python .venv/bin/python --extra dev
+uv run --python .venv/bin/python uvicorn app.main:app --reload
+```

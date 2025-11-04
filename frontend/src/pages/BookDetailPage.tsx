@@ -25,7 +25,7 @@ import {
   Autocomplete,
   Divider,
 } from '@mui/material';
-import { Add, ArrowBack, Delete, Edit, History } from '@mui/icons-material';
+import { Add, ArrowBack, Delete, Edit, History, Settings } from '@mui/icons-material';
 import { useBooks } from '../hooks/useBooks';
 import { useEntries, useCreateEntry, useUpdateEntry, useDeleteEntry } from '../hooks/useEntries';
 import type { Entry, EntryCreate } from '../types/entries';
@@ -203,6 +203,14 @@ export const BookDetailPage = () => {
         <Typography variant="h4" component="h1" sx={{ flexGrow: 1 }}>
           {currentBook?.name || '가계부'}
         </Typography>
+        <Button
+          variant="outlined"
+          startIcon={<Settings />}
+          onClick={() => navigate(`/books/${bookId}/settings`)}
+          sx={{ mr: 1 }}
+        >
+          설정
+        </Button>
         <Button
           variant="outlined"
           startIcon={<History />}
