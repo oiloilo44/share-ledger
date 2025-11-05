@@ -15,6 +15,9 @@ type AuthState = {
     password: string,
   ) => Promise<{ error: Error | null; requiresEmailConfirmation: boolean }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
+  signInWithOAuth: (provider: 'google' | 'kakao') => Promise<{ error: Error | null }>;
+  sendPasswordReset: (email: string) => Promise<{ error: Error | null }>;
+  updatePassword: (password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
 };
 
@@ -104,6 +107,55 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       });
 
       return { error: null };
+    } catch (error) {
+      return { error: error as Error };
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  signInWithOAuth: async (provider: 'google' | 'kakao') => {
+    set({ isLoading: true });
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: window.location.origin,
+        },
+      });
+      return { error: error ?? null };
+    } catch (error) {
+      return { error: error as Error };
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  sendPasswordReset: async (email: string) => {
+    set({ isLoading: true });
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      return { error: error ?? null };
+    } catch (error) {
+      return { error: error as Error };
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  updatePassword: async (password: string) => {
+    set({ isLoading: true });
+    try {
+      const { data, error } = await supabase.auth.updateUser({ password });
+      if (!error) {
+        set((state) => ({
+          user: data.user ?? state.user,
+          session: state.session,
+        }));
+      }
+      return { error: error ?? null };
     } catch (error) {
       return { error: error as Error };
     } finally {

@@ -1,37 +1,70 @@
 /**
- * 가계부 상세 페이지 (내역 목록 및 관리)
+ * 가계부 상세 페이지 (내역 목록 · 고급 필터 · 반복 관리)
  */
 
-import { useState, useMemo } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import {
+  Alert,
+  Autocomplete,
   Box,
   Button,
   Card,
   CardContent,
   Chip,
-  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  Divider,
+  Drawer,
+  FormControlLabel,
+  Checkbox,
   IconButton,
   List,
   ListItem,
   ListItemText,
+  MenuItem,
+  Stack,
   TextField,
+  ToggleButton,
+  ToggleButtonGroup,
   Typography,
-  Alert,
-  Autocomplete,
-  Divider,
 } from '@mui/material';
-import { Add, ArrowBack, Delete, Edit, History, Settings } from '@mui/icons-material';
+import { motion } from 'framer-motion';
+import { useSwipeable } from 'react-swipeable';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import {
+  Add as AddIcon,
+  ArrowBack as ArrowBackIcon,
+  Delete as DeleteIcon,
+  Download as DownloadIcon,
+  Edit as EditIcon,
+  FilterList as FilterListIcon,
+  History as HistoryIcon,
+  Settings as SettingsIcon,
+} from '@mui/icons-material';
+import { format } from 'date-fns';
 import { useBooks } from '../hooks/useBooks';
 import { useEntries, useCreateEntry, useUpdateEntry, useDeleteEntry } from '../hooks/useEntries';
+import { useMembers } from '../hooks/useMembers';
 import type { Entry, EntryCreate } from '../types/entries';
-import { APIError } from '../lib/api';
-import { formatAmount, parseCurrency, sanitizeNumberInput, toISODateString } from '../lib/format';
+import { EntryTypeFilter } from '../types/entries';
+import { APIError, type EntryListParams } from '../lib/api';
+import { formatAmount, toISODateString } from '../lib/format';
+import { exportEntriesAsCSV, exportEntriesAsXLSX } from '../lib/export';
+import { enqueueOfflineEntry } from '../lib/offlineQueue';
 import { useRealtimeBookSync } from '../hooks/useRealtimeSync';
+import { ConfirmDialog } from '../components/ConfirmDialog';
+import { useToastStore } from '../stores/toastStore';
+import { ContentSkeleton } from '../components/ContentSkeleton';
+import { EmptyState } from '../components/EmptyState';
+import { RecurringEntriesSection } from '../components/RecurringEntriesSection';
+import { BulkUploadWizard } from '../components/BulkUploadWizard';
+import { useOfflineStore } from '../stores/offlineStore';
+import { BottomSheet } from '../components/BottomSheet';
+import { AmountInput } from '../components/AmountInput';
+import { FilterBar } from '../components/FilterBar';
 
 type EntryDialogMode = 'create' | 'edit' | null;
 
@@ -43,56 +76,276 @@ interface EntryDialogState {
 interface EntryFormData {
   entry_date: string;
   description: string;
-  amount: string; // 입력 중에는 문자열로 관리
+  amount: number;
+  amountType: 'income' | 'expense';
   category: string;
 }
+
+interface FilterState {
+  fromDate: string | null;
+  toDate: string | null;
+  categories: string[];
+  includeUncategorized: boolean;
+  memberIds: string[];
+  minAmount: number | null;
+  maxAmount: number | null;
+  type: EntryTypeFilter | null;
+  search: string;
+}
+
+const defaultFilters: FilterState = {
+  fromDate: null,
+  toDate: null,
+  categories: [],
+  includeUncategorized: false,
+  memberIds: [],
+  minAmount: null,
+  maxAmount: null,
+  type: null,
+  search: '',
+};
+
+const serializeFilters = (filters: FilterState) => JSON.stringify(filters);
+
+const parseNumber = (value: string | null) => {
+  if (!value) return null;
+  const parsed = Number(value);
+  return Number.isNaN(parsed) ? null : parsed;
+};
+
+const parseList = (value: string | null) => (value ? value.split(',').filter(Boolean) : []);
+
+const parseFiltersFromParams = (params: URLSearchParams): FilterState => {
+  const typeParam = params.get('type');
+  const type =
+    typeParam === EntryTypeFilter.INCOME || typeParam === EntryTypeFilter.EXPENSE
+      ? (typeParam as EntryTypeFilter)
+      : null;
+
+  return {
+    fromDate: params.get('from') || null,
+    toDate: params.get('to') || null,
+    categories: parseList(params.get('categories')),
+    includeUncategorized: params.get('uncategorized') === '1',
+    memberIds: parseList(params.get('members')),
+    minAmount: parseNumber(params.get('min')),
+    maxAmount: parseNumber(params.get('max')),
+    type,
+    search: params.get('search') ?? '',
+  };
+};
+
+const filtersToEntryParams = (filters: FilterState): EntryListParams => ({
+  fromDate: filters.fromDate ?? undefined,
+  toDate: filters.toDate ?? undefined,
+  categories: filters.categories.length ? filters.categories : undefined,
+  includeUncategorized: filters.includeUncategorized || undefined,
+  memberIds: filters.memberIds.length ? filters.memberIds : undefined,
+  minAmount: filters.minAmount ?? undefined,
+  maxAmount: filters.maxAmount ?? undefined,
+  type: filters.type ?? undefined,
+  search: filters.search || undefined,
+});
+
+const filtersToSearchParams = (filters: FilterState): URLSearchParams => {
+  const params = new URLSearchParams();
+  if (filters.fromDate) params.set('from', filters.fromDate);
+  if (filters.toDate) params.set('to', filters.toDate);
+  if (filters.categories.length) params.set('categories', filters.categories.join(','));
+  if (filters.includeUncategorized) params.set('uncategorized', '1');
+  if (filters.memberIds.length) params.set('members', filters.memberIds.join(','));
+  if (filters.minAmount !== null) params.set('min', String(filters.minAmount));
+  if (filters.maxAmount !== null) params.set('max', String(filters.maxAmount));
+  if (filters.type) params.set('type', filters.type);
+  if (filters.search) params.set('search', filters.search);
+  return params;
+};
+
+const formatFilterSummary = (filters: FilterState, memberLookup: Record<string, string>) => {
+  const parts: string[] = [];
+  if (filters.fromDate || filters.toDate) {
+    parts.push(`${filters.fromDate ?? '시작'} ~ ${filters.toDate ?? '현재'}`);
+  }
+  if (filters.categories.length) {
+    parts.push(`카테고리 ${filters.categories.join(', ')}`);
+  }
+  if (filters.includeUncategorized) {
+    parts.push('미분류 포함');
+  }
+  if (filters.memberIds.length) {
+    const labels = filters.memberIds.map((id) => memberLookup[id] ?? id);
+    parts.push(`작성자 ${labels.join(', ')}`);
+  }
+  if (filters.minAmount !== null || filters.maxAmount !== null) {
+    const minLabel = filters.minAmount !== null ? formatAmount(filters.minAmount) : '-∞원';
+    const maxLabel = filters.maxAmount !== null ? formatAmount(filters.maxAmount) : '+∞원';
+    parts.push(`금액 ${minLabel} ~ ${maxLabel}`);
+  }
+  if (filters.type) {
+    parts.push(filters.type === EntryTypeFilter.INCOME ? '수입만' : '지출만');
+  }
+  if (filters.search) {
+    parts.push(`검색 "${filters.search}"`);
+  }
+  return parts.join(' · ');
+};
+
+/**
+ * 스와이프 제스처를 지원하는 내역 아이템 컴포넌트
+ * 왼쪽 스와이프: 삭제, 오른쪽 스와이프: 수정
+ */
+interface SwipeableEntryItemProps {
+  entry: Entry;
+  memberLookup: Record<string, string>;
+  onEdit: () => void;
+  onDelete: () => void;
+  deleteDisabled: boolean;
+}
+
+const SwipeableEntryItem = ({
+  entry,
+  memberLookup,
+  onEdit,
+  onDelete,
+  deleteDisabled,
+}: SwipeableEntryItemProps) => {
+  const swipeHandlers = useSwipeable({
+    onSwipedLeft: () => {
+      // 왼쪽 스와이프: 삭제
+      onDelete();
+    },
+    onSwipedRight: () => {
+      // 오른쪽 스와이프: 수정
+      onEdit();
+    },
+    trackMouse: false, // 마우스 드래그는 비활성화 (터치만)
+    delta: 80, // 최소 80px 이동해야 스와이프로 인식
+    preventScrollOnSwipe: true,
+  });
+
+  return (
+    <Box {...swipeHandlers}>
+      <ListItem
+        divider
+        secondaryAction={
+          <Stack direction="row" spacing={1}>
+            <IconButton onClick={onEdit} size="small">
+              <EditIcon fontSize="small" />
+            </IconButton>
+            <IconButton onClick={onDelete} size="small" disabled={deleteDisabled}>
+              <DeleteIcon fontSize="small" />
+            </IconButton>
+          </Stack>
+        }
+      >
+        <ListItemText
+          primary={
+            <Stack
+              direction={{ xs: 'column', sm: 'row' }}
+              spacing={1}
+              alignItems={{ xs: 'flex-start', sm: 'center' }}
+            >
+              <Typography variant="subtitle1" fontWeight={600}>
+                {entry.description}
+              </Typography>
+              {entry.category && <Chip label={entry.category} size="small" variant="outlined" />}
+            </Stack>
+          }
+          secondary={
+            <Stack
+              direction={{ xs: 'column', sm: 'row' }}
+              spacing={1}
+              alignItems={{ xs: 'flex-start', sm: 'center' }}
+            >
+              <Typography
+                variant="body2"
+                color={entry.amount >= 0 ? 'success.main' : 'error.main'}
+                fontWeight={600}
+              >
+                {formatAmount(entry.amount)}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                작성자: {memberLookup[entry.user_id] ?? entry.user_id}
+              </Typography>
+            </Stack>
+          }
+        />
+      </ListItem>
+    </Box>
+  );
+};
 
 export const BookDetailPage = () => {
   const { bookId } = useParams<{ bookId: string }>();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const { data: books } = useBooks();
-  const { data: entries, isLoading, error } = useEntries(bookId!);
+  const currentBook = useMemo(() => books?.find((book) => book.id === bookId), [books, bookId]);
+
+  const [appliedFilters, setAppliedFilters] = useState<FilterState>(() =>
+    parseFiltersFromParams(searchParams),
+  );
+  const [draftFilters, setDraftFilters] = useState<FilterState>(appliedFilters);
+  const searchSignature = searchParams.toString();
+  const filtersSignature = serializeFilters(appliedFilters);
+
+  useEffect(() => {
+    const next = parseFiltersFromParams(new URLSearchParams(searchSignature));
+    if (serializeFilters(next) !== filtersSignature) {
+      setAppliedFilters(next);
+      setDraftFilters(next);
+    }
+  }, [searchSignature, filtersSignature]);
+
+  const entryQueryParams = useMemo(() => filtersToEntryParams(appliedFilters), [appliedFilters]);
+  const entriesQuery = useEntries(bookId!, entryQueryParams);
+  const entries = useMemo(() => entriesQuery.data ?? [], [entriesQuery.data]);
+  const isLoading = entriesQuery.isLoading;
+  const error = entriesQuery.error;
+
   const createEntry = useCreateEntry(bookId!);
   const updateEntry = useUpdateEntry(bookId!);
   const deleteEntry = useDeleteEntry(bookId!);
+  const { data: members } = useMembers(bookId!);
+  const showToast = useToastStore((state) => state.showToast);
 
-  // 실시간 동기화
   useRealtimeBookSync(bookId);
 
-  const [dialogState, setDialogState] = useState<EntryDialogState>({ mode: null });
-  const [formData, setFormData] = useState<EntryFormData>({
-    entry_date: toISODateString(new Date()),
-    description: '',
-    amount: '',
-    category: '',
-  });
+  const memberOptions = useMemo(
+    () =>
+      (members ?? []).map((member) => ({
+        id: member.user_id,
+        label: member.full_name ?? member.email,
+      })),
+    [members],
+  );
+  const memberLookup = useMemo(
+    () => Object.fromEntries(memberOptions.map((option) => [option.id, option.label])),
+    [memberOptions],
+  );
 
-  const currentBook = books?.find((book) => book.id === bookId);
-
-  // 기존 카테고리 목록 추출 (자동완성용)
   const existingCategories = useMemo(() => {
-    if (!entries) return [];
-    const categories = entries.map((entry) => entry.category).filter((cat): cat is string => !!cat);
-    return Array.from(new Set(categories));
+    const categories = entries
+      .map((entry) => entry.category)
+      .filter((category): category is string => Boolean(category));
+    return Array.from(new Set(categories)).sort();
   }, [entries]);
 
-  // 날짜별로 그룹화 및 정렬
   const groupedEntries = useMemo(() => {
-    if (!entries) return [];
-
+    if (!entries.length) return [] as Array<{ date: string; entries: Entry[]; total: number }>;
     const sorted = [...entries].sort(
       (a, b) => new Date(b.entry_date).getTime() - new Date(a.entry_date).getTime(),
     );
 
-    const groups: { date: string; entries: Entry[]; total: number }[] = [];
+    const groups: Array<{ date: string; entries: Entry[]; total: number }> = [];
     let currentDate = '';
     let currentGroup: Entry[] = [];
     let currentTotal = 0;
 
-    sorted.forEach((entry) => {
+    for (const entry of sorted) {
       if (entry.entry_date !== currentDate) {
-        if (currentGroup.length > 0) {
+        if (currentGroup.length) {
           groups.push({ date: currentDate, entries: currentGroup, total: currentTotal });
         }
         currentDate = entry.entry_date;
@@ -102,29 +355,53 @@ export const BookDetailPage = () => {
         currentGroup.push(entry);
         currentTotal += entry.amount;
       }
-    });
+    }
 
-    if (currentGroup.length > 0) {
+    if (currentGroup.length) {
       groups.push({ date: currentDate, entries: currentGroup, total: currentTotal });
     }
 
     return groups;
   }, [entries]);
 
+  const hasEntries = entries.length > 0;
+  const hasFiltersApplied = serializeFilters(appliedFilters) !== serializeFilters(defaultFilters);
+  const filterSummary = useMemo(
+    () => formatFilterSummary(appliedFilters, memberLookup),
+    [appliedFilters, memberLookup],
+  );
+
+  const [dialogState, setDialogState] = useState<EntryDialogState>({ mode: null });
+  const [formData, setFormData] = useState<EntryFormData>({
+    entry_date: toISODateString(new Date()),
+    description: '',
+    amount: 0,
+    amountType: 'expense',
+    category: '',
+  });
+  const [confirmDeleteTarget, setConfirmDeleteTarget] = useState<Entry | null>(null);
+  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
+  const [isFilterDrawerOpen, setFilterDrawerOpen] = useState(false);
+  const [exportDialogOpen, setExportDialogOpen] = useState(false);
+
   const handleOpenDialog = (mode: EntryDialogMode, entry?: Entry) => {
     setDialogState({ mode, entry });
     if (entry) {
+      const absAmount = Math.abs(entry.amount);
+      const amountType = entry.amount >= 0 ? 'income' : 'expense';
       setFormData({
         entry_date: entry.entry_date,
         description: entry.description,
-        amount: String(entry.amount),
-        category: entry.category || '',
+        amount: absAmount,
+        amountType,
+        category: entry.category ?? '',
       });
     } else {
       setFormData({
         entry_date: toISODateString(new Date()),
         description: '',
-        amount: '',
+        amount: 0,
+        amountType: 'expense',
         category: '',
       });
     }
@@ -134,62 +411,134 @@ export const BookDetailPage = () => {
     setDialogState({ mode: null });
   };
 
-  const handleAmountChange = (value: string) => {
-    const sanitized = sanitizeNumberInput(value);
-    setFormData((prev) => ({ ...prev, amount: sanitized }));
+  const handleAmountInputChange = (value: number, type: 'income' | 'expense') => {
+    setFormData((prev) => ({ ...prev, amount: value, amountType: type }));
   };
 
   const handleSubmit = async () => {
-    const amountValue = parseCurrency(formData.amount);
-    if (!formData.description.trim() || amountValue === null || amountValue === 0) return;
+    if (!formData.description.trim() || formData.amount === 0) {
+      showToast('설명과 금액을 올바르게 입력해주세요.', {
+        severity: 'warning',
+        title: '입력 확인',
+      });
+      return;
+    }
+
+    const signedAmount = formData.amountType === 'income' ? formData.amount : -formData.amount;
 
     const payload: EntryCreate = {
       entry_date: formData.entry_date,
       description: formData.description.trim(),
-      amount: amountValue,
-      category: formData.category.trim() || null,
+      amount: signedAmount,
+      category: formData.category.trim() ? formData.category.trim() : null,
     };
 
     try {
       if (dialogState.mode === 'create') {
         await createEntry.mutateAsync(payload);
+        showToast('내역을 추가했습니다.', { severity: 'success', title: '저장 완료' });
       } else if (dialogState.mode === 'edit' && dialogState.entry) {
-        await updateEntry.mutateAsync({
-          entryId: dialogState.entry.id,
-          data: payload,
-        });
+        await updateEntry.mutateAsync({ entryId: dialogState.entry.id, data: payload });
+        showToast('내역을 수정했습니다.', { severity: 'success', title: '수정 완료' });
       }
       handleCloseDialog();
-    } catch (error) {
-      console.error('내역 저장 실패:', error);
+    } catch (err) {
+      if (!navigator.onLine) {
+        const queued = enqueueOfflineEntry({ ...payload, bookId, timestamp: Date.now() });
+        useOfflineStore.getState().setPendingEntries(queued);
+        showToast('오프라인 상태입니다. 연결 시 자동 업로드됩니다.', {
+          severity: 'info',
+          title: '대기열 저장',
+        });
+        handleCloseDialog();
+        return;
+      }
+      console.error('내역 저장 실패:', err);
+      const message =
+        err instanceof APIError ? err.message : '내역을 저장하지 못했습니다. 다시 시도해주세요.';
+      showToast(message, { severity: 'error', title: '저장 실패' });
     }
   };
 
-  const handleDelete = async (entry: Entry) => {
-    if (!window.confirm(`"${entry.description}" 내역을 삭제하시겠습니까?`)) {
+  const handleDelete = (entry: Entry) => {
+    setConfirmDeleteTarget(entry);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!confirmDeleteTarget) return;
+    try {
+      setIsConfirmingDelete(true);
+      await deleteEntry.mutateAsync(confirmDeleteTarget.id);
+      showToast('내역을 삭제했습니다.', { severity: 'success', title: '삭제 완료' });
+      setConfirmDeleteTarget(null);
+    } catch (err) {
+      console.error('삭제 실패:', err);
+      const message =
+        err instanceof APIError
+          ? err.message
+          : `"${confirmDeleteTarget.description}" 내역을 삭제하지 못했습니다.`;
+      showToast(message, { severity: 'error', title: '삭제 실패' });
+    } finally {
+      setIsConfirmingDelete(false);
+    }
+  };
+
+  const handleResetFilters = () => {
+    setAppliedFilters(defaultFilters);
+    setDraftFilters(defaultFilters);
+    setSearchParams(new URLSearchParams(), { replace: true });
+    setFilterDrawerOpen(false);
+  };
+
+  const handleApplyFilters = () => {
+    setAppliedFilters(draftFilters);
+    const params = filtersToSearchParams(draftFilters);
+    setSearchParams(params, { replace: true });
+    setFilterDrawerOpen(false);
+  };
+
+  const handleExport = (formatType: 'csv' | 'xlsx') => {
+    if (!entries.length) {
+      showToast('내보낼 내역이 없습니다.', { severity: 'info', title: '내보내기' });
+      setExportDialogOpen(false);
       return;
     }
 
-    try {
-      await deleteEntry.mutateAsync(entry.id);
-    } catch (error) {
-      console.error('내역 삭제 실패:', error);
+    const baseName = (currentBook?.name ?? 'shareledger').replace(/\s+/g, '-');
+    const timestamp = format(new Date(), 'yyyyMMdd-HHmm');
+    const fileName = `${baseName}-${timestamp}`;
+
+    if (formatType === 'csv') {
+      exportEntriesAsCSV(entries, fileName);
+    } else {
+      exportEntriesAsXLSX(entries, fileName);
     }
+
+    showToast('내보내기를 시작했습니다.', { severity: 'success', title: '내보내기' });
+    setExportDialogOpen(false);
   };
 
-  const parsedAmount = parseCurrency(formData.amount);
+  if (!bookId) {
+    return (
+      <Box p={3}>
+        <Alert severity="warning">잘못된 가계부 경로입니다.</Alert>
+      </Box>
+    );
+  }
 
   if (isLoading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-        <CircularProgress />
+      <Box p={3}>
+        <ContentSkeleton variant="detail" items={4} withToolbar />
       </Box>
     );
   }
 
   if (error) {
     const errorMessage =
-      error instanceof APIError ? error.message : '내역 목록을 불러오는데 실패했습니다.';
+      error instanceof APIError
+        ? error.message
+        : '내역을 불러오는데 실패했습니다. 잠시 후 다시 시도해주세요.';
     return (
       <Box p={3}>
         <Alert severity="error">{errorMessage}</Alert>
@@ -200,193 +549,400 @@ export const BookDetailPage = () => {
   return (
     <Box>
       {/* 헤더 */}
-      <Box display="flex" alignItems="center" mb={3}>
-        <IconButton onClick={() => navigate('/books')} sx={{ mr: 1 }}>
-          <ArrowBack />
+      <Box display="flex" alignItems="center" mb={2} gap={1} flexWrap="wrap">
+        <IconButton onClick={() => navigate('/books')}>
+          <ArrowBackIcon />
         </IconButton>
-        <Typography variant="h4" component="h1" sx={{ flexGrow: 1 }}>
-          {currentBook?.name || '가계부'}
+        <Typography variant="h4" component="h1" fontWeight={800} sx={{ flexGrow: 1 }}>
+          {currentBook?.name ?? '가계부'}
         </Typography>
-        <Button
-          variant="outlined"
-          startIcon={<Settings />}
-          onClick={() => navigate(`/books/${bookId}/settings`)}
-          sx={{ mr: 1 }}
-        >
-          설정
-        </Button>
-        <Button
-          variant="outlined"
-          startIcon={<History />}
-          onClick={() => navigate(`/books/${bookId}/history`)}
-          sx={{ mr: 1 }}
-        >
-          히스토리
-        </Button>
-        <Button
-          variant="contained"
-          startIcon={<Add />}
-          onClick={() => handleOpenDialog('create')}
-          disabled={createEntry.isPending}
-        >
-          내역 추가
-        </Button>
+        <Stack direction="row" spacing={1} flexWrap="wrap">
+          <Button
+            variant="outlined"
+            startIcon={<SettingsIcon />}
+            onClick={() => navigate(`/books/${bookId}/settings`)}
+          >
+            설정
+          </Button>
+          <Button
+            variant="outlined"
+            startIcon={<HistoryIcon />}
+            onClick={() => navigate(`/books/${bookId}/history`)}
+          >
+            히스토리
+          </Button>
+          <Button
+            variant="outlined"
+            startIcon={<FilterListIcon />}
+            onClick={() => setFilterDrawerOpen(true)}
+          >
+            고급 필터
+          </Button>
+          <Button
+            variant="outlined"
+            startIcon={<DownloadIcon />}
+            onClick={() => setExportDialogOpen(true)}
+          >
+            내보내기
+          </Button>
+          <BulkUploadWizard bookId={bookId} existingCategories={existingCategories} />
+          <Button
+            variant="contained"
+            size="large"
+            startIcon={<AddIcon />}
+            onClick={() => handleOpenDialog('create')}
+            disabled={createEntry.isPending}
+          >
+            내역 추가
+          </Button>
+        </Stack>
       </Box>
 
-      {/* 내역 목록 */}
-      {groupedEntries.length === 0 ? (
-        <Box textAlign="center" py={8}>
-          <Typography variant="body1" color="text.secondary" gutterBottom>
-            아직 내역이 없습니다.
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            새 내역을 추가해보세요!
-          </Typography>
-        </Box>
-      ) : (
-        <Box>
+      {/* 빠른 필터 (전체/수입/지출) */}
+      <Box mb={3}>
+        <FilterBar
+          options={[
+            { value: 'all', label: '전체' },
+            { value: EntryTypeFilter.INCOME, label: '수입' },
+            { value: EntryTypeFilter.EXPENSE, label: '지출' },
+          ]}
+          value={appliedFilters.type ? [appliedFilters.type] : ['all']}
+          onChange={(values) => {
+            const typeValue = values.includes('all') ? null : (values[0] as EntryTypeFilter | null);
+            const newFilters = { ...appliedFilters, type: typeValue };
+            setAppliedFilters(newFilters);
+            setDraftFilters(newFilters);
+            setSearchParams(filtersToSearchParams(newFilters), { replace: true });
+          }}
+          allowEmpty={false}
+        />
+      </Box>
+
+      {hasFiltersApplied && (
+        <Alert
+          severity="info"
+          sx={{ mb: 3 }}
+          action={
+            <Button color="inherit" size="small" onClick={handleResetFilters}>
+              초기화
+            </Button>
+          }
+        >
+          {filterSummary || '필터가 적용되었습니다.'}
+        </Alert>
+      )}
+
+      {hasEntries ? (
+        <Stack
+          spacing={3}
+          component={motion.div}
+          initial="hidden"
+          animate="visible"
+          variants={{
+            hidden: { opacity: 0 },
+            visible: {
+              opacity: 1,
+              transition: {
+                staggerChildren: 0.1,
+              },
+            },
+          }}
+        >
           {groupedEntries.map((group) => (
-            <Card key={group.date} sx={{ mb: 2 }}>
+            <Card
+              key={group.date}
+              variant="outlined"
+              component={motion.div}
+              variants={{
+                hidden: { opacity: 0, y: 20 },
+                visible: { opacity: 1, y: 0 },
+              }}
+              transition={{
+                duration: 0.3,
+                ease: [0.4, 0, 0.2, 1],
+              }}
+            >
               <CardContent>
-                <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-                  <Typography variant="h6">
-                    {new Date(group.date).toLocaleDateString('ko-KR', {
-                      month: 'long',
-                      day: 'numeric',
-                      weekday: 'short',
-                    })}
+                <Stack
+                  direction={{ xs: 'column', sm: 'row' }}
+                  alignItems={{ xs: 'flex-start', sm: 'center' }}
+                  justifyContent="space-between"
+                  spacing={1}
+                  mb={2}
+                >
+                  <Typography variant="h6" fontWeight={700}>
+                    {group.date}
                   </Typography>
                   <Chip
                     label={formatAmount(group.total)}
                     color={group.total >= 0 ? 'success' : 'error'}
-                    size="small"
+                    variant="outlined"
                   />
-                </Box>
-                <Divider sx={{ mb: 1 }} />
+                </Stack>
+                <Divider sx={{ mb: 1.5 }} />
                 <List disablePadding>
-                  {group.entries.map((entry, index) => (
-                    <ListItem
+                  {group.entries.map((entry) => (
+                    <SwipeableEntryItem
                       key={entry.id}
-                      sx={{
-                        py: 1,
-                        px: 0,
-                        borderBottom: index < group.entries.length - 1 ? '1px solid' : 'none',
-                        borderColor: 'divider',
-                      }}
-                      secondaryAction={
-                        <Box>
-                          <IconButton
-                            edge="end"
-                            size="small"
-                            onClick={() => handleOpenDialog('edit', entry)}
-                            sx={{ mr: 0.5 }}
-                          >
-                            <Edit fontSize="small" />
-                          </IconButton>
-                          <IconButton
-                            edge="end"
-                            size="small"
-                            onClick={() => handleDelete(entry)}
-                            disabled={deleteEntry.isPending}
-                          >
-                            <Delete fontSize="small" />
-                          </IconButton>
-                        </Box>
-                      }
-                    >
-                      <ListItemText
-                        primary={
-                          <Box display="flex" alignItems="center" gap={1}>
-                            <Typography variant="body1">{entry.description}</Typography>
-                            {entry.category && (
-                              <Chip label={entry.category} size="small" variant="outlined" />
-                            )}
-                          </Box>
-                        }
-                        secondary={
-                          <Typography
-                            variant="body2"
-                            color={entry.amount >= 0 ? 'success.main' : 'error.main'}
-                            fontWeight="medium"
-                          >
-                            {formatAmount(entry.amount)}
-                          </Typography>
-                        }
-                      />
-                    </ListItem>
+                      entry={entry}
+                      memberLookup={memberLookup}
+                      onEdit={() => handleOpenDialog('edit', entry)}
+                      onDelete={() => handleDelete(entry)}
+                      deleteDisabled={deleteEntry.isPending}
+                    />
                   ))}
                 </List>
               </CardContent>
             </Card>
           ))}
-        </Box>
+        </Stack>
+      ) : (
+        <EmptyState
+          title="표시할 내역이 없습니다"
+          description={
+            hasFiltersApplied
+              ? '선택한 조건에 해당하는 내역이 없습니다. 필터를 조정해보세요.'
+              : '첫 내역을 추가하고 가계부를 시작해보세요.'
+          }
+        />
       )}
 
-      {/* 생성/수정 다이얼로그 */}
-      <Dialog open={dialogState.mode !== null} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
-        <DialogTitle>{dialogState.mode === 'create' ? '새 내역 추가' : '내역 수정'}</DialogTitle>
-        <DialogContent>
-          <Box display="flex" flexDirection="column" gap={2} mt={1}>
-            <TextField
-              label="날짜"
-              type="date"
+      <Box mt={4}>
+        <RecurringEntriesSection bookId={bookId} />
+      </Box>
+
+      <BottomSheet
+        open={dialogState.mode !== null}
+        onClose={handleCloseDialog}
+        title={dialogState.mode === 'create' ? '새 내역 추가' : '내역 수정'}
+        maxWidth="sm"
+      >
+        <Stack spacing={3}>
+          {/* AmountInput */}
+          <AmountInput
+            value={formData.amount}
+            type={formData.amountType}
+            onChange={handleAmountInputChange}
+          />
+
+          {/* 날짜 */}
+          <TextField
+            label="날짜"
+            type="date"
+            value={formData.entry_date}
+            onChange={(event) =>
+              setFormData((prev) => ({ ...prev, entry_date: event.target.value }))
+            }
+            InputLabelProps={{ shrink: true }}
+            fullWidth
+          />
+
+          {/* 설명 */}
+          <TextField
+            label="설명"
+            value={formData.description}
+            onChange={(event) =>
+              setFormData((prev) => ({ ...prev, description: event.target.value }))
+            }
+            inputProps={{ maxLength: 200 }}
+            helperText={`${formData.description.length}/200`}
+            placeholder="예: 점심 식사"
+            fullWidth
+          />
+
+          {/* 카테고리 */}
+          <Autocomplete
+            freeSolo
+            options={existingCategories}
+            value={formData.category}
+            onChange={(_, newValue) =>
+              setFormData((prev) => ({ ...prev, category: newValue || '' }))
+            }
+            onInputChange={(_, newValue) =>
+              setFormData((prev) => ({ ...prev, category: newValue }))
+            }
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="카테고리 (선택)"
+                inputProps={{ ...params.inputProps, maxLength: 80 }}
+                placeholder="예: 식비"
+              />
+            )}
+          />
+
+          {/* 액션 버튼 */}
+          <Stack direction="row" spacing={2} sx={{ pt: 2 }}>
+            <Button onClick={handleCloseDialog} size="large" fullWidth variant="outlined">
+              취소
+            </Button>
+            <Button
+              onClick={handleSubmit}
+              variant="contained"
+              size="large"
               fullWidth
-              value={formData.entry_date}
-              onChange={(e) => setFormData((prev) => ({ ...prev, entry_date: e.target.value }))}
-              InputLabelProps={{ shrink: true }}
+              disabled={
+                !formData.description.trim() ||
+                formData.amount === 0 ||
+                createEntry.isPending ||
+                updateEntry.isPending
+              }
+            >
+              {dialogState.mode === 'create' ? '추가' : '저장'}
+            </Button>
+          </Stack>
+        </Stack>
+      </BottomSheet>
+
+      <ConfirmDialog
+        open={confirmDeleteTarget !== null}
+        title="내역 삭제"
+        description={
+          confirmDeleteTarget
+            ? `"${confirmDeleteTarget.description}" 내역을 삭제하시겠습니까?`
+            : undefined
+        }
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setConfirmDeleteTarget(null)}
+        confirmText="삭제"
+        variant="danger"
+        loading={isConfirmingDelete}
+      />
+
+      <Drawer anchor="right" open={isFilterDrawerOpen} onClose={() => setFilterDrawerOpen(false)}>
+        <Box sx={{ width: { xs: '100vw', sm: 360 }, p: 3 }}>
+          <Stack spacing={2}>
+            <Typography variant="h6">고급 필터</Typography>
+            <DatePicker
+              label="시작일"
+              value={draftFilters.fromDate ? new Date(draftFilters.fromDate) : null}
+              onChange={(value) =>
+                setDraftFilters((prev) => ({
+                  ...prev,
+                  fromDate: value ? toISODateString(value) : null,
+                }))
+              }
+            />
+            <DatePicker
+              label="종료일"
+              value={draftFilters.toDate ? new Date(draftFilters.toDate) : null}
+              onChange={(value) =>
+                setDraftFilters((prev) => ({
+                  ...prev,
+                  toDate: value ? toISODateString(value) : null,
+                }))
+              }
             />
             <TextField
-              label="설명"
-              fullWidth
-              value={formData.description}
-              onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
-              inputProps={{ maxLength: 200 }}
-              helperText={`${formData.description.length}/200`}
+              label="검색어"
+              value={draftFilters.search}
+              onChange={(event) =>
+                setDraftFilters((prev) => ({ ...prev, search: event.target.value }))
+              }
+              placeholder="설명에서 검색"
             />
-            <TextField
-              label="금액 (원)"
-              fullWidth
-              value={formData.amount}
-              onChange={(e) => handleAmountChange(e.target.value)}
-              placeholder="예: 50000 (양수: 수입, 음수: 지출)"
-              helperText="음수를 입력하면 지출, 양수를 입력하면 수입으로 기록됩니다"
-            />
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+              <TextField
+                label="최소 금액"
+                type="number"
+                value={draftFilters.minAmount ?? ''}
+                onChange={(event) =>
+                  setDraftFilters((prev) => ({
+                    ...prev,
+                    minAmount: event.target.value === '' ? null : Number(event.target.value),
+                  }))
+                }
+              />
+              <TextField
+                label="최대 금액"
+                type="number"
+                value={draftFilters.maxAmount ?? ''}
+                onChange={(event) =>
+                  setDraftFilters((prev) => ({
+                    ...prev,
+                    maxAmount: event.target.value === '' ? null : Number(event.target.value),
+                  }))
+                }
+              />
+            </Stack>
+            <ToggleButtonGroup
+              value={draftFilters.type}
+              exclusive
+              onChange={(_, value) =>
+                setDraftFilters((prev) => ({ ...prev, type: value === null ? null : value }))
+              }
+              color="primary"
+            >
+              <ToggleButton value={EntryTypeFilter.INCOME}>수입</ToggleButton>
+              <ToggleButton value={EntryTypeFilter.EXPENSE}>지출</ToggleButton>
+            </ToggleButtonGroup>
             <Autocomplete
+              multiple
               freeSolo
               options={existingCategories}
-              value={formData.category}
-              onChange={(_, newValue) =>
-                setFormData((prev) => ({ ...prev, category: newValue || '' }))
-              }
-              onInputChange={(_, newValue) =>
-                setFormData((prev) => ({ ...prev, category: newValue }))
-              }
+              value={draftFilters.categories}
+              onChange={(_, value) => setDraftFilters((prev) => ({ ...prev, categories: value }))}
               renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="카테고리 (선택사항)"
-                  helperText="기존 카테고리를 선택하거나 새로 입력하세요"
-                  inputProps={{ ...params.inputProps, maxLength: 80 }}
-                />
+                <TextField {...params} label="카테고리" placeholder="카테고리를 선택 또는 입력" />
               )}
             />
-          </Box>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={draftFilters.includeUncategorized}
+                  onChange={(event) =>
+                    setDraftFilters((prev) => ({
+                      ...prev,
+                      includeUncategorized: event.target.checked,
+                    }))
+                  }
+                />
+              }
+              label="카테고리 미분류 포함"
+            />
+            <TextField
+              select
+              label="작성자"
+              SelectProps={{ multiple: true }}
+              value={draftFilters.memberIds}
+              onChange={(event) => {
+                const value = event.target.value;
+                setDraftFilters((prev) => ({
+                  ...prev,
+                  memberIds: typeof value === 'string' ? value.split(',') : (value as string[]),
+                }));
+              }}
+              helperText="선택한 사용자만 표시합니다"
+            >
+              {memberOptions.map((member) => (
+                <MenuItem key={member.id} value={member.id}>
+                  {member.label}
+                </MenuItem>
+              ))}
+            </TextField>
+            <Stack direction="row" spacing={1} justifyContent="flex-end" pt={1}>
+              <Button onClick={handleResetFilters}>초기화</Button>
+              <Button variant="contained" onClick={handleApplyFilters}>
+                적용
+              </Button>
+            </Stack>
+          </Stack>
+        </Box>
+      </Drawer>
+
+      <Dialog open={exportDialogOpen} onClose={() => setExportDialogOpen(false)}>
+        <DialogTitle>데이터 내보내기</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" color="text.secondary">
+            현재 필터가 적용된 {entries.length}건의 내역을 CSV 또는 XLSX 형식으로 내보낼 수
+            있습니다.
+          </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDialog}>취소</Button>
-          <Button
-            onClick={handleSubmit}
-            variant="contained"
-            disabled={
-              !formData.description.trim() ||
-              formData.amount.trim() === '' ||
-              parsedAmount === null ||
-              parsedAmount === 0 ||
-              createEntry.isPending ||
-              updateEntry.isPending
-            }
-          >
-            {dialogState.mode === 'create' ? '추가' : '저장'}
+          <Button onClick={() => setExportDialogOpen(false)}>취소</Button>
+          <Button onClick={() => handleExport('csv')}>CSV</Button>
+          <Button variant="contained" onClick={() => handleExport('xlsx')}>
+            XLSX
           </Button>
         </DialogActions>
       </Dialog>

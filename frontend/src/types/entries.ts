@@ -45,3 +45,56 @@ export interface EntryHistoryItem {
   action_type: EntryHistoryAction;
   snapshot: Record<string, unknown>;
 }
+
+export enum EntryTypeFilter {
+  INCOME = 'income',
+  EXPENSE = 'expense',
+}
+
+export interface EntryStatsSummary {
+  total_income: number;
+  total_expense: number;
+  net_amount: number;
+}
+
+export interface EntryStatsCategory {
+  category: string;
+  amount: number;
+  ratio: number;
+}
+
+export interface EntryStatsTrendPoint {
+  period: string; // ISO date (YYYY-MM-01)
+  income: number;
+  expense: number;
+}
+
+export interface EntryStatsTopEntry {
+  id: string;
+  description: string;
+  amount: number;
+  entry_date: string;
+  category: string | null;
+}
+
+export interface EntryStatsResponse {
+  summary: EntryStatsSummary;
+  category_distribution: EntryStatsCategory[];
+  trend: EntryStatsTrendPoint[];
+  top_expenses: EntryStatsTopEntry[];
+  total_entries: number;
+}
+
+export interface EntryBulkImportResultItem {
+  index: number;
+  success: boolean;
+  entry?: Entry;
+  error?: string;
+}
+
+export interface EntryBulkImportResult {
+  total: number;
+  success_count: number;
+  failure_count: number;
+  rows: EntryBulkImportResultItem[];
+}

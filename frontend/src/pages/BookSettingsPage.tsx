@@ -41,6 +41,8 @@ import { BookRole, type BookMemberInvite } from '../types/books';
 import { APIError } from '../lib/api';
 import { useAuthStore } from '../stores/authStore';
 import { useRealtimeBookSync } from '../hooks/useRealtimeSync';
+import { ConfirmDialog } from '../components/ConfirmDialog';
+import { useToastStore } from '../stores/toastStore';
 
 interface InviteDialogState {
   open: boolean;
@@ -61,6 +63,7 @@ export const BookSettingsPage = () => {
   const inviteMember = useInviteMember(bookId!);
   const updateMemberRole = useUpdateMemberRole(bookId!);
   const removeMember = useRemoveMember(bookId!);
+  const showToast = useToastStore((state) => state.showToast);
 
   // 실시간 동기화
   useRealtimeBookSync(bookId);
@@ -70,6 +73,18 @@ export const BookSettingsPage = () => {
     email: '',
     role: BookRole.EDITOR,
   });
+  const [confirmState, setConfirmState] = useState<
+    | {
+        type: 'role';
+        memberUserId: string;
+        memberEmail: string;
+        currentRole: BookRole;
+        nextRole: BookRole;
+      }
+    | { type: 'remove'; memberUserId: string; memberEmail: string }
+    | null
+  >(null);
+  const [isConfirming, setIsConfirming] = useState(false);
 
   const currentBook = books?.find((book) => book.id === bookId);
   const isOwner = currentBook?.current_role === BookRole.OWNER;
@@ -94,45 +109,65 @@ export const BookSettingsPage = () => {
     try {
       await inviteMember.mutateAsync(payload);
       handleCloseInviteDialog();
-      alert('멤버를 성공적으로 초대했습니다.');
+      showToast('멤버를 성공적으로 초대했습니다.', 'success');
     } catch (error) {
       console.error('멤버 초대 실패:', error);
       const errorMessage = error instanceof APIError ? error.message : '멤버 초대에 실패했습니다.';
-      alert(errorMessage);
+      showToast(errorMessage, 'error');
     }
   };
 
-  const handleRoleChange = async (memberUserId: string, newRole: BookRole) => {
-    if (!window.confirm('멤버의 역할을 변경하시겠습니까?')) {
-      return;
-    }
+  const handleRoleChangeRequest = (
+    memberUserId: string,
+    memberEmail: string,
+    currentRole: BookRole,
+    newRole: BookRole,
+  ) => {
+    setConfirmState({
+      type: 'role',
+      memberUserId,
+      memberEmail,
+      currentRole,
+      nextRole: newRole,
+    });
+  };
 
+  const handleRemoveMemberRequest = (memberUserId: string, memberEmail: string) => {
+    setConfirmState({
+      type: 'remove',
+      memberUserId,
+      memberEmail,
+    });
+  };
+
+  const handleConfirmAction = async () => {
+    if (!confirmState) return;
     try {
-      await updateMemberRole.mutateAsync({
-        memberUserId,
-        data: { role: newRole },
-      });
-      alert('역할이 성공적으로 변경되었습니다.');
-    } catch (error) {
-      console.error('역할 변경 실패:', error);
-      const errorMessage = error instanceof APIError ? error.message : '역할 변경에 실패했습니다.';
-      alert(errorMessage);
+      setIsConfirming(true);
+      if (confirmState.type === 'role') {
+        await updateMemberRole.mutateAsync({
+          memberUserId: confirmState.memberUserId,
+          data: { role: confirmState.nextRole },
+        });
+        showToast('역할이 변경되었습니다.', 'success');
+      } else {
+        await removeMember.mutateAsync(confirmState.memberUserId);
+        showToast('멤버를 삭제했습니다.', 'success');
+      }
+      setConfirmState(null);
+    } catch (err) {
+      console.error('멤버 설정 작업 실패:', err);
+      const message =
+        err instanceof APIError ? err.message : '작업을 완료하지 못했습니다. 다시 시도해주세요.';
+      showToast(message, 'error');
+    } finally {
+      setIsConfirming(false);
     }
   };
 
-  const handleRemoveMember = async (memberUserId: string, memberEmail: string) => {
-    if (!window.confirm(`"${memberEmail}" 멤버를 삭제하시겠습니까?`)) {
-      return;
-    }
-
-    try {
-      await removeMember.mutateAsync(memberUserId);
-      alert('멤버가 성공적으로 삭제되었습니다.');
-    } catch (error) {
-      console.error('멤버 삭제 실패:', error);
-      const errorMessage = error instanceof APIError ? error.message : '멤버 삭제에 실패했습니다.';
-      alert(errorMessage);
-    }
+  const handleCancelConfirm = () => {
+    if (isConfirming) return;
+    setConfirmState(null);
   };
 
   if (isLoading) {
@@ -214,7 +249,12 @@ export const BookSettingsPage = () => {
                               <Select
                                 value={member.role}
                                 onChange={(e) =>
-                                  handleRoleChange(member.user_id, e.target.value as BookRole)
+                                  handleRoleChangeRequest(
+                                    member.user_id,
+                                    member.email,
+                                    member.role,
+                                    e.target.value as BookRole,
+                                  )
                                 }
                                 disabled={updateMemberRole.isPending}
                               >
@@ -232,7 +272,9 @@ export const BookSettingsPage = () => {
                           {canRemove && (
                             <IconButton
                               edge="end"
-                              onClick={() => handleRemoveMember(member.user_id, member.email)}
+                              onClick={() =>
+                                handleRemoveMemberRequest(member.user_id, member.email)
+                              }
                               disabled={removeMember.isPending}
                             >
                               <Delete />
@@ -324,6 +366,33 @@ export const BookSettingsPage = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <ConfirmDialog
+        open={confirmState !== null}
+        title={confirmState?.type === 'remove' ? '멤버 삭제' : '역할 변경'}
+        description={
+          confirmState ? (
+            confirmState.type === 'remove' ? (
+              <>
+                "{confirmState.memberEmail}" 멤버를 삭제하시겠습니까?
+                <br />
+                삭제 후에는 다시 초대해야 합니다.
+              </>
+            ) : (
+              <>
+                "{confirmState.memberEmail}" 멤버의 역할을{' '}
+                {confirmState.currentRole === BookRole.OWNER ? '소유자' : '편집자'}에서{' '}
+                {confirmState.nextRole === BookRole.OWNER ? '소유자' : '편집자'}로 변경하시겠습니까?
+              </>
+            )
+          ) : undefined
+        }
+        confirmText={confirmState?.type === 'remove' ? '삭제' : '변경'}
+        variant={confirmState?.type === 'remove' ? 'danger' : 'warning'}
+        loading={isConfirming}
+        onConfirm={handleConfirmAction}
+        onCancel={handleCancelConfirm}
+      />
     </Box>
   );
 };

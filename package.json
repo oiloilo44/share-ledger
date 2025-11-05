@@ -9,6 +9,7 @@
     "prepare": "husky"
   },
   "devDependencies": {
+    "@vitest/coverage-v8": "^4.0.7",
     "husky": "^9.1.6",
     "lint-staged": "^15.2.8"
   },

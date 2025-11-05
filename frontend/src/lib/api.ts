@@ -12,7 +12,16 @@ import type {
   BookMemberInvite,
   BookMemberUpdate,
 } from '../types/books';
-import type { Entry, EntryCreate, EntryUpdate, EntryHistoryItem } from '../types/entries';
+import type {
+  Entry,
+  EntryBulkImportResult,
+  EntryCreate,
+  EntryHistoryItem,
+  EntryStatsResponse,
+  EntryTypeFilter,
+  EntryUpdate,
+} from '../types/entries';
+import type { RecurringEntry, RecurringEntryPayload } from '../types/recurring';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
@@ -25,6 +34,25 @@ class APIError extends Error {
     super(message);
     this.name = 'APIError';
   }
+}
+
+export interface EntryListParams {
+  fromDate?: string;
+  toDate?: string;
+  categories?: string[];
+  includeUncategorized?: boolean;
+  memberIds?: string[];
+  minAmount?: number;
+  maxAmount?: number;
+  type?: EntryTypeFilter;
+  search?: string;
+}
+
+export interface EntryStatsParams {
+  month?: string;
+  fromDate?: string;
+  toDate?: string;
+  topLimit?: number;
 }
 
 async function getAuthHeaders(): Promise<HeadersInit> {
@@ -155,12 +183,29 @@ export const booksApi = {
 
 // Entries API
 export const entriesApi = {
-  async list(bookId: string): Promise<Entry[]> {
+  async list(bookId: string, params?: EntryListParams): Promise<Entry[]> {
     const headers = await getAuthHeaders();
-    const response = await fetch(`${API_BASE_URL}/books/${bookId}/entries`, {
-      method: 'GET',
-      headers,
-    });
+    const searchParams = new URLSearchParams();
+    if (params?.fromDate) searchParams.append('from_date', params.fromDate);
+    if (params?.toDate) searchParams.append('to_date', params.toDate);
+    if (typeof params?.minAmount === 'number')
+      searchParams.append('min_amount', String(params.minAmount));
+    if (typeof params?.maxAmount === 'number')
+      searchParams.append('max_amount', String(params.maxAmount));
+    if (params?.type) searchParams.append('type', params.type);
+    if (params?.search) searchParams.append('search', params.search);
+    if (params?.includeUncategorized) searchParams.append('includeUncategorized', 'true');
+    params?.categories?.forEach((category) => searchParams.append('categories', category));
+    params?.memberIds?.forEach((memberId) => searchParams.append('memberIds', memberId));
+    const queryString = searchParams.toString();
+
+    const response = await fetch(
+      `${API_BASE_URL}/books/${bookId}/entries${queryString ? `?${queryString}` : ''}`,
+      {
+        method: 'GET',
+        headers,
+      },
+    );
     return handleResponse<Entry[]>(response);
   },
 
@@ -218,6 +263,84 @@ export const entriesApi = {
       headers,
     });
     return handleResponse<Entry>(response);
+  },
+
+  async stats(bookId: string, params?: EntryStatsParams): Promise<EntryStatsResponse> {
+    const headers = await getAuthHeaders();
+    const searchParams = new URLSearchParams();
+    if (params?.month) searchParams.append('month', params.month);
+    if (params?.fromDate) searchParams.append('from_date', params.fromDate);
+    if (params?.toDate) searchParams.append('to_date', params.toDate);
+    if (typeof params?.topLimit === 'number')
+      searchParams.append('top_limit', String(params.topLimit));
+    const query = searchParams.toString();
+    const response = await fetch(
+      `${API_BASE_URL}/books/${bookId}/stats${query ? `?${query}` : ''}`,
+      {
+        method: 'GET',
+        headers,
+      },
+    );
+    return handleResponse<EntryStatsResponse>(response);
+  },
+
+  async bulkImport(bookId: string, rows: EntryCreate[]): Promise<EntryBulkImportResult> {
+    const headers = await getAuthHeaders();
+    const response = await fetch(`${API_BASE_URL}/books/${bookId}/entries/import`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ rows }),
+    });
+    return handleResponse<EntryBulkImportResult>(response);
+  },
+};
+
+export const recurringApi = {
+  async list(bookId: string): Promise<RecurringEntry[]> {
+    const headers = await getAuthHeaders();
+    const response = await fetch(`${API_BASE_URL}/books/${bookId}/recurring`, {
+      method: 'GET',
+      headers,
+    });
+    return handleResponse<RecurringEntry[]>(response);
+  },
+
+  async create(bookId: string, payload: RecurringEntryPayload): Promise<RecurringEntry> {
+    const headers = await getAuthHeaders();
+    const response = await fetch(`${API_BASE_URL}/books/${bookId}/recurring`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(payload),
+    });
+    return handleResponse<RecurringEntry>(response);
+  },
+
+  async update(recurringId: string, payload: RecurringEntryPayload): Promise<RecurringEntry> {
+    const headers = await getAuthHeaders();
+    const response = await fetch(`${API_BASE_URL}/recurring/${recurringId}`, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify(payload),
+    });
+    return handleResponse<RecurringEntry>(response);
+  },
+
+  async retry(recurringId: string): Promise<RecurringEntry> {
+    const headers = await getAuthHeaders();
+    const response = await fetch(`${API_BASE_URL}/recurring/${recurringId}/retry`, {
+      method: 'POST',
+      headers,
+    });
+    return handleResponse<RecurringEntry>(response);
+  },
+
+  async remove(recurringId: string): Promise<void> {
+    const headers = await getAuthHeaders();
+    const response = await fetch(`${API_BASE_URL}/recurring/${recurringId}`, {
+      method: 'DELETE',
+      headers,
+    });
+    return handleResponse<void>(response);
   },
 };
 
