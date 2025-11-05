@@ -5,6 +5,9 @@
 __pycache__
 *.py[cod]
 uv.lock
+.coverage
+htmlcov/
+*.coverage
 
 # Node
 node_modules/
@@ -32,6 +35,7 @@ plan.md
 # IDE
 .idea/
 .vscode/
+.code/
 
 # Development server logs
 .devserver/
