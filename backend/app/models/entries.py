@@ -41,6 +41,13 @@ class EntryCreate(BaseModel):
         return v
 
 
+class EntryType(str, Enum):
+    """내역 유형."""
+
+    INCOME = "income"
+    EXPENSE = "expense"
+
+
 class EntryUpdate(BaseModel):
     """가계부 내역 수정 요청 본문."""
 
@@ -77,3 +84,71 @@ class EntryHistoryItem(BaseModel):
     changed_at: datetime
     action_type: EntryHistoryAction
     snapshot: dict[str, Any]
+
+
+class EntryStatsSummary(BaseModel):
+    """내역 통계 요약 카드."""
+
+    total_income: int
+    total_expense: int
+    net_amount: int
+
+
+class EntryStatsCategory(BaseModel):
+    """카테고리별 지표."""
+
+    category: str
+    amount: int
+    ratio: float
+
+
+class EntryStatsTrendPoint(BaseModel):
+    """월별 추이 포인트."""
+
+    period: date
+    income: int
+    expense: int
+
+
+class EntryStatsTopEntry(BaseModel):
+    """상위 지출 항목."""
+
+    id: UUID
+    description: str
+    amount: int
+    entry_date: date
+    category: str | None
+
+
+class EntryStats(BaseModel):
+    """분석 대시보드 응답."""
+
+    summary: EntryStatsSummary
+    category_distribution: list[EntryStatsCategory]
+    trend: list[EntryStatsTrendPoint]
+    top_expenses: list[EntryStatsTopEntry]
+    total_entries: int
+
+
+class EntryBulkImportRequest(BaseModel):
+    """일괄 업로드 요청."""
+
+    rows: list[EntryCreate] = Field(min_length=1, description="업로드할 내역 목록")
+
+
+class EntryBulkImportResultItem(BaseModel):
+    """일괄 업로드 결과 행."""
+
+    index: int
+    success: bool
+    entry: Entry | None = None
+    error: str | None = None
+
+
+class EntryBulkImportResult(BaseModel):
+    """일괄 업로드 결과."""
+
+    total: int
+    success_count: int
+    failure_count: int
+    rows: list[EntryBulkImportResultItem]

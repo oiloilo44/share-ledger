@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
+from collections.abc import Sequence
 from datetime import UTC, date, datetime
 from typing import Any
 from uuid import UUID, uuid4
@@ -9,10 +10,24 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app.main import create_app
-from app.models import Entry, EntryHistoryAction, EntryHistoryItem
+from app.models import (
+    Entry,
+    EntryBulkImportResult,
+    EntryBulkImportResultItem,
+    EntryCreate,
+    EntryHistoryAction,
+    EntryHistoryItem,
+    EntryStats,
+    EntryStatsSummary,
+)
 from app.schemas.auth import SupabaseUser
 from app.services.auth import get_current_user
-from app.services.entries import EntryServiceError, get_entry_service
+from app.services.entries import (
+    EntryListFilters,
+    EntryServiceError,
+    EntryStatsParams,
+    get_entry_service,
+)
 
 
 class DummyEntryService:
@@ -26,6 +41,8 @@ class DummyEntryService:
         self.update_entry_result: Entry | None = None
         self.list_history_result: list[EntryHistoryItem] = []
         self.revert_history_result: Entry | None = None
+        self.get_stats_result: EntryStats | None = None
+        self.bulk_import_result: EntryBulkImportResult | None = None
         self.list_entries_error: EntryServiceError | None = None
         self.get_entry_error: EntryServiceError | None = None
         self.create_entry_error: EntryServiceError | None = None
@@ -33,9 +50,16 @@ class DummyEntryService:
         self.delete_entry_error: EntryServiceError | None = None
         self.list_history_error: EntryServiceError | None = None
         self.revert_history_error: EntryServiceError | None = None
+        self.get_stats_error: EntryServiceError | None = None
+        self.bulk_import_error: EntryServiceError | None = None
 
-    async def list_entries(self, book_id: UUID, user: SupabaseUser) -> list[Entry]:
-        self.calls["list_entries"].append((book_id, user))
+    async def list_entries(
+        self,
+        book_id: UUID,
+        user: SupabaseUser,
+        filters: EntryListFilters | None = None,
+    ) -> list[Entry]:
+        self.calls["list_entries"].append((book_id, user, filters))
         if self.list_entries_error:
             raise self.list_entries_error
         return self.list_entries_result
@@ -89,6 +113,30 @@ class DummyEntryService:
             raise self.revert_history_error
         assert self.revert_history_result is not None
         return self.revert_history_result
+
+    async def get_stats(
+        self,
+        book_id: UUID,
+        user: SupabaseUser,
+        params: EntryStatsParams,
+    ) -> EntryStats:
+        self.calls["get_stats"].append((book_id, user, params))
+        if self.get_stats_error:
+            raise self.get_stats_error
+        assert self.get_stats_result is not None
+        return self.get_stats_result
+
+    async def bulk_import_entries(
+        self,
+        book_id: UUID,
+        user: SupabaseUser,
+        rows: Sequence[EntryCreate],
+    ) -> EntryBulkImportResult:
+        self.calls.setdefault("bulk_import_entries", []).append((book_id, user, tuple(rows)))
+        if self.bulk_import_error:
+            raise self.bulk_import_error
+        assert self.bulk_import_result is not None
+        return self.bulk_import_result
 
 
 @pytest.fixture
@@ -175,6 +223,39 @@ def test_create_entry_returns_created_item(
     assert dummy_entry_service.calls["create_entry"]
 
 
+def test_import_entries_returns_result(
+    test_client: TestClient,
+    dummy_entry_service: DummyEntryService,
+) -> None:
+    entry = _entry()
+    result = EntryBulkImportResult(
+        total=1,
+        success_count=1,
+        failure_count=0,
+        rows=[EntryBulkImportResultItem(index=0, success=True, entry=entry)],
+    )
+    dummy_entry_service.bulk_import_result = result
+
+    response = test_client.post(
+        f"/books/{entry.book_id}/entries/import",
+        json={
+            "rows": [
+                {
+                    "entry_date": "2024-01-01",
+                    "description": "커피",
+                    "amount": 1000,
+                    "category": "식비",
+                }
+            ]
+        },
+    )
+
+    assert response.status_code == 201
+    payload = response.json()
+    assert payload["success_count"] == 1
+    assert dummy_entry_service.calls["bulk_import_entries"]
+
+
 def test_update_entry_propagates_service_error(
     test_client: TestClient,
     dummy_entry_service: DummyEntryService,
@@ -197,6 +278,27 @@ def test_update_entry_propagates_service_error(
 
     assert response.status_code == 404
     assert response.json() == {"detail": "존재하지 않는 내역입니다."}
+
+
+def test_get_stats_returns_payload(
+    test_client: TestClient,
+    dummy_entry_service: DummyEntryService,
+) -> None:
+    book_id = uuid4()
+    dummy_entry_service.get_stats_result = EntryStats(
+        summary=EntryStatsSummary(total_income=100000, total_expense=40000, net_amount=60000),
+        category_distribution=[],
+        trend=[],
+        top_expenses=[],
+        total_entries=5,
+    )
+
+    response = test_client.get(f"/books/{book_id}/stats?month=2024-01")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["summary"]["total_income"] == 100000
+    assert dummy_entry_service.calls["get_stats"]
 
 
 def test_delete_entry_returns_no_content(

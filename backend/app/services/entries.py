@@ -5,9 +5,11 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+from collections import defaultdict
+from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import date, datetime
-from decimal import Decimal
+from decimal import ROUND_HALF_UP, Decimal
 from typing import Any
 from uuid import UUID
 
@@ -19,9 +21,17 @@ from app.db import get_supabase_client
 from app.models import (
     BookRole,
     Entry,
+    EntryBulkImportResult,
+    EntryBulkImportResultItem,
     EntryCreate,
     EntryHistoryAction,
     EntryHistoryItem,
+    EntryStats,
+    EntryStatsCategory,
+    EntryStatsSummary,
+    EntryStatsTopEntry,
+    EntryStatsTrendPoint,
+    EntryType,
     EntryUpdate,
 )
 from app.schemas.auth import SupabaseUser
@@ -39,19 +49,54 @@ class EntryServiceError(RuntimeError):
 
 
 @dataclass(slots=True)
+class EntryListFilters:
+    """내역 목록 필터."""
+
+    from_date: date | None = None
+    to_date: date | None = None
+    categories: tuple[str, ...] = tuple()
+    member_ids: tuple[UUID, ...] = tuple()
+    min_amount: int | None = None
+    max_amount: int | None = None
+    entry_type: EntryType | None = None
+    search: str | None = None
+    include_uncategorized: bool = False
+
+
+@dataclass(slots=True)
+class EntryStatsParams:
+    """통계 조회 파라미터."""
+
+    start_date: date | None = None
+    end_date: date | None = None
+    top_limit: int = 5
+
+
+@dataclass(slots=True)
 class EntryService:
     """Supabase 기반 내역 및 수정 이력 서비스."""
 
     client: Client
 
-    async def list_entries(self, book_id: UUID, user: SupabaseUser) -> list[Entry]:
+    async def list_entries(
+        self,
+        book_id: UUID,
+        user: SupabaseUser,
+        filters: EntryListFilters | None = None,
+    ) -> list[Entry]:
         """가계부 내역 목록을 반환한다."""
+        filters = filters or EntryListFilters()
         await asyncio.to_thread(self._require_membership_sync, book_id, user.id)
         try:
-            rows = await asyncio.to_thread(self._list_entries_sync, book_id)
+            rows = await asyncio.to_thread(self._list_entries_sync, book_id, filters)
         except PostgrestAPIError as exc:  # pragma: no cover - 로컬 재현 어려움
             raise self._convert_error(exc) from exc
-        return [self._row_to_entry(row) for row in rows]
+        entries = [self._row_to_entry(row) for row in rows]
+        if filters.categories or filters.include_uncategorized:
+            entries = self._filter_by_categories(
+                entries, filters.categories, filters.include_uncategorized
+            )
+        return entries
 
     async def get_entry(self, book_id: UUID, entry_id: UUID, user: SupabaseUser) -> Entry:
         """단일 내역을 반환한다."""
@@ -95,6 +140,53 @@ class EntryService:
             data={"id": str(entry.id)},
         )
         return entry
+
+    async def bulk_import_entries(
+        self,
+        book_id: UUID,
+        user: SupabaseUser,
+        rows: Sequence[EntryCreate],
+    ) -> EntryBulkImportResult:
+        """내역을 일괄 업로드한다."""
+        await asyncio.to_thread(self._require_membership_sync, book_id, user.id)
+
+        results: list[EntryBulkImportResultItem] = []
+        success_count = 0
+        for index, payload in enumerate(rows):
+            try:
+                row = await asyncio.to_thread(
+                    self._create_entry_with_history_sync,
+                    book_id,
+                    user.id,
+                    payload,
+                )
+                entry = self._row_to_entry(row)
+                success_count += 1
+                results.append(EntryBulkImportResultItem(index=index, success=True, entry=entry))
+                await self._emit_book_event(
+                    entry.book_id,
+                    action="entry_imported",
+                    entity="entry",
+                    data={"id": str(entry.id)},
+                )
+            except EntryServiceError as exc:
+                results.append(
+                    EntryBulkImportResultItem(index=index, success=False, error=exc.detail)
+                )
+            except PostgrestAPIError as exc:  # pragma: no cover - 네트워크 예외
+                converted = self._convert_error(exc)
+                results.append(
+                    EntryBulkImportResultItem(index=index, success=False, error=converted.detail)
+                )
+
+        total = len(rows)
+        failure_count = total - success_count
+        return EntryBulkImportResult(
+            total=total,
+            success_count=success_count,
+            failure_count=failure_count,
+            rows=results,
+        )
 
     async def update_entry(
         self,
@@ -195,6 +287,138 @@ class EntryService:
         )
         return entry
 
+    async def get_stats(
+        self,
+        book_id: UUID,
+        user: SupabaseUser,
+        params: EntryStatsParams,
+    ) -> EntryStats:
+        """가계부 통계 데이터를 반환한다."""
+        filters = EntryListFilters(
+            from_date=params.start_date,
+            to_date=params.end_date,
+        )
+        entries = await self.list_entries(book_id, user, filters)
+        return self._build_stats(entries, params)
+
+    def _build_stats(self, entries: Sequence[Entry], params: EntryStatsParams) -> EntryStats:
+        summary = self._calculate_summary(entries)
+        category_distribution = self._calculate_category_distribution(
+            entries, summary.total_expense
+        )
+        trend = self._calculate_trend(entries, params.start_date, params.end_date)
+        top_expenses = self._calculate_top_expenses(entries, params.top_limit)
+        return EntryStats(
+            summary=summary,
+            category_distribution=category_distribution,
+            trend=trend,
+            top_expenses=top_expenses,
+            total_entries=len(entries),
+        )
+
+    def _calculate_summary(self, entries: Sequence[Entry]) -> EntryStatsSummary:
+        total_income = sum(entry.amount for entry in entries if entry.amount > 0)
+        total_expense = sum(-entry.amount for entry in entries if entry.amount < 0)
+        net_amount = total_income - total_expense
+        return EntryStatsSummary(
+            total_income=total_income,
+            total_expense=total_expense,
+            net_amount=net_amount,
+        )
+
+    def _calculate_category_distribution(
+        self,
+        entries: Sequence[Entry],
+        total_expense: int,
+    ) -> list[EntryStatsCategory]:
+        if not entries or total_expense <= 0:
+            return []
+
+        buckets: dict[str, int] = defaultdict(int)
+        for entry in entries:
+            if entry.amount >= 0:
+                continue
+            category = entry.category or "미분류"
+            buckets[category] += -entry.amount
+
+        if not buckets:
+            return []
+
+        distribution: list[EntryStatsCategory] = []
+        for category, amount in sorted(buckets.items(), key=lambda item: item[1], reverse=True):
+            ratio = amount / total_expense if total_expense else 0
+            distribution.append(
+                EntryStatsCategory(
+                    category=category,
+                    amount=amount,
+                    ratio=round(ratio, 4),
+                )
+            )
+        return distribution
+
+    def _calculate_trend(
+        self,
+        entries: Sequence[Entry],
+        start_date: date | None,
+        end_date: date | None,
+    ) -> list[EntryStatsTrendPoint]:
+        if not entries:
+            return []
+
+        buckets: dict[date, dict[str, int]] = defaultdict(lambda: {"income": 0, "expense": 0})
+        for entry in entries:
+            period = entry.entry_date.replace(day=1)
+            if entry.amount >= 0:
+                buckets[period]["income"] += entry.amount
+            else:
+                buckets[period]["expense"] += -entry.amount
+
+        min_date = start_date or min(entry.entry_date for entry in entries)
+        max_date = end_date or max(entry.entry_date for entry in entries)
+        current = min_date.replace(day=1)
+        last = max_date.replace(day=1)
+
+        trend: list[EntryStatsTrendPoint] = []
+        while current <= last:
+            bucket = buckets.get(current, {"income": 0, "expense": 0})
+            trend.append(
+                EntryStatsTrendPoint(
+                    period=current,
+                    income=bucket["income"],
+                    expense=bucket["expense"],
+                )
+            )
+            current = self._add_month(current)
+        return trend
+
+    def _calculate_top_expenses(
+        self,
+        entries: Sequence[Entry],
+        limit: int,
+    ) -> list[EntryStatsTopEntry]:
+        if not entries or limit <= 0:
+            return []
+
+        expenses = [entry for entry in entries if entry.amount < 0]
+        expenses.sort(key=lambda entry: entry.amount)  # 금액은 음수, 절댓값 큰 순으로 정렬
+        top_items = expenses[:limit]
+
+        return [
+            EntryStatsTopEntry(
+                id=item.id,
+                description=item.description,
+                amount=-item.amount,
+                entry_date=item.entry_date,
+                category=item.category,
+            )
+            for item in top_items
+        ]
+
+    def _add_month(self, value: date) -> date:
+        year = value.year + (1 if value.month == 12 else 0)
+        month = 1 if value.month == 12 else value.month + 1
+        return date(year, month, 1)
+
     # ----- 동기 헬퍼 메서드 -----
 
     def _require_membership_sync(self, book_id: UUID, user_id: UUID) -> BookRole:
@@ -232,16 +456,62 @@ class EntryService:
             )
         return BookRole(membership_data[0]["role"])
 
-    def _list_entries_sync(self, book_id: UUID) -> list[dict[str, Any]]:
-        response = (
-            self.client.table("entries")
-            .select("*")
-            .eq("book_id", str(book_id))
-            .order("entry_date", desc=True)
-            .order("created_at", desc=True)
-            .execute()
-        )
+    def _list_entries_sync(self, book_id: UUID, filters: EntryListFilters) -> list[dict[str, Any]]:
+        query = self.client.table("entries").select("*").eq("book_id", str(book_id))
+        query = self._apply_filters_to_query(query, filters)
+        query = query.order("entry_date", desc=True).order("created_at", desc=True)
+        response = query.execute()
         return response.data or []
+
+    def _apply_filters_to_query(self, query: Any, filters: EntryListFilters | None) -> Any:
+        if not filters:
+            return query
+
+        if filters.from_date:
+            query = query.gte("entry_date", filters.from_date.isoformat())
+        if filters.to_date:
+            query = query.lte("entry_date", filters.to_date.isoformat())
+
+        if filters.categories and not filters.include_uncategorized:
+            query = query.in_("category", list(filters.categories))
+
+        if filters.member_ids:
+            query = query.in_("user_id", [str(member_id) for member_id in filters.member_ids])
+
+        if filters.min_amount is not None:
+            query = query.gte("amount", str(filters.min_amount))
+        if filters.max_amount is not None:
+            query = query.lte("amount", str(filters.max_amount))
+
+        if filters.entry_type == EntryType.INCOME:
+            query = query.gte("amount", "0")
+        elif filters.entry_type == EntryType.EXPENSE:
+            query = query.lte("amount", "0")
+
+        if filters.search:
+            pattern = f"%{filters.search}%"
+            query = query.ilike("description", pattern)
+
+        return query
+
+    def _filter_by_categories(
+        self,
+        entries: Sequence[Entry],
+        categories: Sequence[str],
+        include_uncategorized: bool,
+    ) -> list[Entry]:
+        if not categories and not include_uncategorized:
+            return list(entries)
+
+        allowed = set(categories)
+        filtered: list[Entry] = []
+        for entry in entries:
+            if entry.category is not None and entry.category in allowed:
+                filtered.append(entry)
+                continue
+            if include_uncategorized and entry.category is None:
+                filtered.append(entry)
+        return filtered
 
     def _get_entry_sync(self, book_id: UUID, entry_id: UUID) -> dict[str, Any] | None:
         response = (
@@ -461,12 +731,8 @@ class EntryService:
 
     def _parse_amount(self, value: Any) -> int:
         decimal_value = Decimal(str(value))
-        if decimal_value != decimal_value.to_integral_value():
-            raise EntryServiceError(
-                "금액은 정수여야 합니다.",
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
-        return int(decimal_value)
+        rounded = decimal_value.quantize(Decimal("1"), rounding=ROUND_HALF_UP)
+        return int(rounded)
 
     def _normalize_category(self, value: str | None) -> str | None:
         if value is None:

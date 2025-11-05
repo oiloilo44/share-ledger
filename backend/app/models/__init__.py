@@ -12,10 +12,25 @@ from .books import (
 )
 from .entries import (
     Entry,
+    EntryBulkImportRequest,
+    EntryBulkImportResult,
+    EntryBulkImportResultItem,
     EntryCreate,
     EntryHistoryAction,
     EntryHistoryItem,
+    EntryStats,
+    EntryStatsCategory,
+    EntryStatsSummary,
+    EntryStatsTopEntry,
+    EntryStatsTrendPoint,
+    EntryType,
     EntryUpdate,
+)
+from .recurring import (
+    RecurringEntry,
+    RecurringEntryCreate,
+    RecurringEntryUpdate,
+    RecurringFrequency,
 )
 
 __all__ = [
@@ -28,8 +43,21 @@ __all__ = [
     "BookRole",
     "BookUpdate",
     "Entry",
+    "EntryBulkImportRequest",
+    "EntryBulkImportResult",
+    "EntryBulkImportResultItem",
     "EntryCreate",
     "EntryHistoryAction",
     "EntryHistoryItem",
+    "EntryStats",
+    "EntryStatsCategory",
+    "EntryStatsSummary",
+    "EntryStatsTopEntry",
+    "EntryStatsTrendPoint",
+    "EntryType",
     "EntryUpdate",
+    "RecurringEntry",
+    "RecurringEntryCreate",
+    "RecurringEntryUpdate",
+    "RecurringFrequency",
 ]
