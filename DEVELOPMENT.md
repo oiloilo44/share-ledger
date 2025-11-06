@@ -190,22 +190,58 @@ app/
 
 **Commit 메시지 형식**: `<type>(<scope>): <summary>`
 
-예시:
+**메시지 작성 규칙**:
 
-- `feat(api): add entry history endpoints`
-- `feat(frontend): implement dark mode toggle`
-- `fix(auth): resolve token refresh issue`
-- `chore: update dependencies`
-- `docs: update API documentation`
+- **제목 (첫 줄)**: 반드시 영어로 작성
+  - 형식: `<type>(<scope>): <summary>`
+  - 50자 이내, 명령형 (예: "add" not "added")
+  - 마침표 없음
+- **본문 (두 번째 줄 이후)**: 한글 또는 영어로 상세 설명 작성 가능
+  - 한 줄 띄우고 작성
+  - 변경 이유, 주요 내용 설명
+  - 72자 기준으로 줄바꿈 권장
 
-**중요 규칙**:
+**Type 종류**:
 
-- AI 관련 표현 절대 금지
-- Git config: `user.name = "mp"`, `user.email = "mp@mp.mp"`
-- 커밋 전 체크리스트:
-  1. pre-commit 훅 통과 확인 (ruff, black, ESLint, Prettier)
-  2. `plan.md` 상태 갱신 (`⏳` → `✅`) - gitignore됨
-  3. 관련 테스트 실행 및 통과 확인
+- `feat`: 새로운 기능 추가
+- `fix`: 버그 수정
+- `refactor`: 코드 리팩토링 (동작 변경 없음)
+- `perf`: 성능 개선
+- `test`: 테스트 추가/수정
+- `docs`: 문서 수정
+- `chore`: 빌드, 설정 파일 수정
+
+**예시**:
+
+```
+feat(api): add entry history endpoints
+
+가계부 내역 변경 이력 조회 및 복원 기능 추가:
+- GET /entries/{id}/history: 변경 이력 조회
+- POST /entries/{id}/restore: 특정 시점으로 복원
+```
+
+```
+fix(auth): resolve token refresh issue
+```
+
+**절대 금지 사항**:
+
+- ❌ AI/도구 관련 문구 (예: "Generated with...", "Co-Authored-By: Claude")
+- ❌ 이모지 사용 (예: 🎉, 🤖, ✨)
+- ❌ 제목에 한글 사용
+- ❌ 불필요한 메타 정보
+
+**Git config**:
+
+- `user.name = "mp"`
+- `user.email = "mp@mp.mp"`
+
+**커밋 전 체크리스트**:
+
+1. pre-commit 훅 통과 확인 (ruff, black, ESLint, Prettier)
+2. `plan.md` 상태 갱신 (`⏳` → `✅`) - gitignore됨
+3. 관련 테스트 실행 및 통과 확인
 
 ### Pull Request 가이드라인
 
