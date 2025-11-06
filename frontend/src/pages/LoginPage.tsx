@@ -11,9 +11,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  Divider,
   Link,
-  Stack,
   TextField,
   Typography,
 } from '@mui/material';
@@ -21,7 +19,7 @@ import { useAuthStore } from '../stores/authStore';
 
 export const LoginPage = () => {
   const navigate = useNavigate();
-  const { signIn, signInWithOAuth, sendPasswordReset, isLoading } = useAuthStore();
+  const { signIn, sendPasswordReset, isLoading } = useAuthStore();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -47,14 +45,6 @@ export const LoginPage = () => {
     }
 
     navigate('/');
-  };
-
-  const handleOAuth = async (provider: 'google' | 'kakao') => {
-    setError(null);
-    const { error: oauthError } = await signInWithOAuth(provider);
-    if (oauthError) {
-      setError(oauthError.message || '소셜 로그인에 실패했습니다.');
-    }
   };
 
   const handlePasswordResetSubmit = async (event: React.FormEvent) => {
@@ -95,7 +85,7 @@ export const LoginPage = () => {
                 ShareLedger
               </Typography>
               <Typography variant="body1" color="text.secondary">
-                공동 가계부 관리 서비스
+                공유 가계부
               </Typography>
             </Box>
 
@@ -106,7 +96,7 @@ export const LoginPage = () => {
             )}
 
             <Box component="form" onSubmit={handleSubmit} noValidate>
-              <Stack spacing={2.5}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
                 <TextField
                   required
                   fullWidth
@@ -133,7 +123,7 @@ export const LoginPage = () => {
                   disabled={isLoading}
                   placeholder="비밀번호를 입력하세요"
                 />
-              </Stack>
+              </Box>
 
               <Box sx={{ textAlign: 'right', mt: 1.5 }}>
                 <Link
@@ -157,39 +147,6 @@ export const LoginPage = () => {
               >
                 {isLoading ? '로그인 중...' : '로그인'}
               </Button>
-
-              <Divider sx={{ my: 3 }}>
-                <Typography variant="body2" color="text.secondary" fontWeight={500}>
-                  또는
-                </Typography>
-              </Divider>
-
-              <Stack spacing={2}>
-                <Button
-                  fullWidth
-                  variant="outlined"
-                  size="large"
-                  onClick={() => handleOAuth('google')}
-                  disabled={isLoading}
-                >
-                  Google 계정으로 계속
-                </Button>
-                <Button
-                  fullWidth
-                  variant="contained"
-                  size="large"
-                  onClick={() => handleOAuth('kakao')}
-                  disabled={isLoading}
-                  sx={{
-                    bgcolor: '#fee500',
-                    color: '#180500',
-                    '&:hover': { bgcolor: '#fdd835' },
-                    '&:active': { transform: 'scale(0.98)' },
-                  }}
-                >
-                  Kakao 계정으로 계속
-                </Button>
-              </Stack>
 
               <Box sx={{ textAlign: 'center', mt: 4 }}>
                 <Typography variant="body1" color="text.secondary">
