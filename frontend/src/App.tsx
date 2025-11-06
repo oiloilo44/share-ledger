@@ -27,6 +27,32 @@ const App = () => {
   const mode = useUIStore((state) => state.themeMode);
   const theme = useMemo(() => buildTheme(mode), [mode]);
 
+  // 시스템 다크 모드 설정 변경 감지
+  useEffect(() => {
+    // localStorage에 저장된 사용자 선택이 있으면 시스템 설정 무시
+    const hasUserPreference = localStorage.getItem('themeMode') !== null;
+    if (hasUserPreference) {
+      return;
+    }
+
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleChange = (e: MediaQueryListEvent) => {
+      const newMode = e.matches ? 'dark' : 'light';
+      useUIStore.setState({ themeMode: newMode });
+    };
+
+    // Modern browsers
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener('change', handleChange);
+      return () => mediaQuery.removeEventListener('change', handleChange);
+    }
+    // Legacy browsers (Safari < 14)
+    else if (mediaQuery.addListener) {
+      mediaQuery.addListener(handleChange);
+      return () => mediaQuery.removeListener(handleChange);
+    }
+  }, []);
+
   useEffect(() => {
     const updateOffline = () => {
       useOfflineStore.getState().setOffline(!navigator.onLine);
