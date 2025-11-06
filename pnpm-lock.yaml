@@ -74,9 +74,6 @@ importers:
         specifier: ^5.0.3
         version: 5.0.8(@types/react@18.3.26)(react@18.3.1)
     devDependencies:
-      '@chromatic-com/storybook':
-        specifier: ^4.1.2
-        version: 4.1.2(storybook@10.0.4(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.12(@types/node@22.18.13)(yaml@2.8.1)))
       '@eslint/eslintrc':
         specifier: ^3.2.0
         version: 3.3.1
@@ -89,9 +86,6 @@ importers:
       '@storybook/addon-docs':
         specifier: 10.0.4
         version: 10.0.4(@types/react@18.3.26)(esbuild@0.25.11)(rollup@4.52.5)(storybook@10.0.4(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.12(@types/node@22.18.13)(yaml@2.8.1)))(vite@7.1.12(@types/node@22.18.13)(yaml@2.8.1))
-      '@storybook/addon-onboarding':
-        specifier: 10.0.4
-        version: 10.0.4(storybook@10.0.4(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.12(@types/node@22.18.13)(yaml@2.8.1)))
       '@storybook/addon-vitest':
         specifier: 10.0.4
         version: 10.0.4(@vitest/runner@4.0.7)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@10.0.4(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.12(@types/node@22.18.13)(yaml@2.8.1)))(vitest@4.0.7(@types/node@22.18.13)(jsdom@25.0.1)(yaml@2.8.1))
@@ -110,6 +104,9 @@ importers:
       '@types/node':
         specifier: ^22.10.5
         version: 22.18.13
+      '@types/papaparse':
+        specifier: ^5.5.0
+        version: 5.5.0
       '@types/react':
         specifier: ^18.3.12
         version: 18.3.26
@@ -128,9 +125,6 @@ importers:
       '@vitest/coverage-v8':
         specifier: ^4.0.7
         version: 4.0.7(vitest@4.0.7(@types/node@22.18.13)(jsdom@25.0.1)(yaml@2.8.1))
-      chromatic:
-        specifier: ^11.12.2
-        version: 11.29.0
       eslint:
         specifier: ^9.15.0
         version: 9.38.0
@@ -334,15 +328,6 @@ packages:
         integrity: sha512-6zABk/ECA/QYSCQ1NGiVwwbQerUCZ+TQbp64Q3AgmfNvurHH0j8TtXa1qbShXA6qqkpAj4V5W8pP6mLe1mcMqA==,
       }
     engines: { node: '>=18' }
-
-  '@chromatic-com/storybook@4.1.2':
-    resolution:
-      {
-        integrity: sha512-QAWGtHwib0qsP5CcO64aJCF75zpFgpKK3jNpxILzQiPK3sVo4EmnVGJVdwcZWpWrGdH8E4YkncGoitw4EXzKMg==,
-      }
-    engines: { node: '>=20.0.0', yarn: '>=1.22.18' }
-    peerDependencies:
-      storybook: ^0.0.0-0 || ^9.0.0 || ^9.1.0-0 || ^9.2.0-0 || ^10.0.0-0 || ^10.1.0-0 || ^10.2.0-0 || ^10.3.0-0
 
   '@csstools/color-helpers@5.1.0':
     resolution:
@@ -1037,12 +1022,6 @@ packages:
     peerDependencies:
       react: ^17.0.0 || ^18.0.0 || ^19.0.0
 
-  '@neoconfetti/react@1.0.0':
-    resolution:
-      {
-        integrity: sha512-klcSooChXXOzIm+SE5IISIAn3bYzYfPjbX7D7HoqZL84oAfgREeSg5vSIaSFH+DaGzzvImTyWe1OyrJ67vik4A==,
-      }
-
   '@nodelib/fs.scandir@2.1.5':
     resolution:
       {
@@ -1296,14 +1275,6 @@ packages:
     resolution:
       {
         integrity: sha512-RbrvAy0PNDLgTSVWofNd1Fa/3RvU9PRHvjhOVN9hgW/ToEKJaeQ0hxbnluwSp48VLAQNp16oDq8dphX/ASmQTg==,
-      }
-    peerDependencies:
-      storybook: ^10.0.4
-
-  '@storybook/addon-onboarding@10.0.4':
-    resolution:
-      {
-        integrity: sha512-SjJ1vb0CcN+a9vyYr/fPzgcwQDqp96ClS+JU1UKc1a2l9y6AO4EbzqnWKPrfSeKKmfNdBpb3t4AkIPtC3FPVqw==,
       }
     peerDependencies:
       storybook: ^10.0.4
@@ -1632,6 +1603,12 @@ packages:
     resolution:
       {
         integrity: sha512-Bo45YKIjnmFtv6I1TuC8AaHBbqXtIo+Om5fE4QiU1Tj8QR/qt+8O3BAtOimG5IFmwaWiPmB3Mv3jtYzBA4Us2A==,
+      }
+
+  '@types/papaparse@5.5.0':
+    resolution:
+      {
+        integrity: sha512-GVs5iMQmUr54BAZYYkByv8zPofFxmyxUpISPb2oh8sayR3+1zbxasrOvoKiHJ/nnoq/uULuPsu1Lze1EkagVFg==,
       }
 
   '@types/parse-json@4.0.2':
@@ -2122,36 +2099,6 @@ packages:
         integrity: sha512-OAlb+T7V4Op9OwdkjmguYRqncdlx5JiofwOAUkmTF+jNdHwzTaTs4sRAGpzLF3oOz5xAyDGrPgeIDFQmDOTiJw==,
       }
     engines: { node: '>= 16' }
-
-  chromatic@11.29.0:
-    resolution:
-      {
-        integrity: sha512-yisBlntp9hHVj19lIQdpTlcYIXuU9H/DbFuu6tyWHmj6hWT2EtukCCcxYXL78XdQt1vm2GfIrtgtKpj/Rzmo4A==,
-      }
-    hasBin: true
-    peerDependencies:
-      '@chromatic-com/cypress': ^0.*.* || ^1.0.0
-      '@chromatic-com/playwright': ^0.*.* || ^1.0.0
-    peerDependenciesMeta:
-      '@chromatic-com/cypress':
-        optional: true
-      '@chromatic-com/playwright':
-        optional: true
-
-  chromatic@12.2.0:
-    resolution:
-      {
-        integrity: sha512-GswmBW9ZptAoTns1BMyjbm55Z7EsIJnUvYKdQqXIBZIKbGErmpA+p4c0BYA+nzw5B0M+rb3Iqp1IaH8TFwIQew==,
-      }
-    hasBin: true
-    peerDependencies:
-      '@chromatic-com/cypress': ^0.*.* || ^1.0.0
-      '@chromatic-com/playwright': ^0.*.* || ^1.0.0
-    peerDependenciesMeta:
-      '@chromatic-com/cypress':
-        optional: true
-      '@chromatic-com/playwright':
-        optional: true
 
   cli-cursor@5.0.0:
     resolution:
@@ -2773,13 +2720,6 @@ packages:
       }
     engines: { node: '>=16.0.0' }
 
-  filesize@10.1.6:
-    resolution:
-      {
-        integrity: sha512-sJslQKU2uM33qH5nqewAwVB2QgR6w1aMNsYUp3aN5rMRyXEwJGmZvaWzeJFNTOXWlHQyBFCWrdj3fV/fsTOX8w==,
-      }
-    engines: { node: '>= 10.4.0' }
-
   fill-range@7.1.1:
     resolution:
       {
@@ -2934,12 +2874,6 @@ packages:
         integrity: sha512-ZUKRh6/kUFoAiTAtTYPZJ3hw9wNxx+BIBOijnlG9PnrJsCcSjs1wyyD6vJpaYtgnzDrKYRSqf3OO6Rfa93xsRg==,
       }
     engines: { node: '>= 0.4' }
-
-  graceful-fs@4.2.11:
-    resolution:
-      {
-        integrity: sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ==,
-      }
 
   graphemer@1.4.0:
     resolution:
@@ -3250,12 +3184,6 @@ packages:
       }
     engines: { node: '>=6' }
     hasBin: true
-
-  jsonfile@6.2.0:
-    resolution:
-      {
-        integrity: sha512-FGuPw30AdOIUTRMC2OMRtQV+jkVj2cfPqSeWXv1NEAJ1qZ5zb1X6z1mFhbfOB/iy3ssJCD+3KuZ8r8C3uVFlAg==,
-      }
 
   keyv@4.5.4:
     resolution:
@@ -4319,13 +4247,6 @@ packages:
         integrity: sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==,
       }
 
-  universalify@2.0.1:
-    resolution:
-      {
-        integrity: sha512-gptHNQghINnc/vTGIk0SOFGFNXw7JVrlRUtConJRlvaw6DuX0wO5Jeko9sWrMBhh+PsYAZ7oXAiOnf/UKogyiw==,
-      }
-    engines: { node: '>= 10.0.0' }
-
   unplugin@2.3.10:
     resolution:
       {
@@ -4757,18 +4678,6 @@ snapshots:
 
   '@bcoe/v8-coverage@1.0.2': {}
 
-  '@chromatic-com/storybook@4.1.2(storybook@10.0.4(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.12(@types/node@22.18.13)(yaml@2.8.1)))':
-    dependencies:
-      '@neoconfetti/react': 1.0.0
-      chromatic: 12.2.0
-      filesize: 10.1.6
-      jsonfile: 6.2.0
-      storybook: 10.0.4(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.12(@types/node@22.18.13)(yaml@2.8.1))
-      strip-ansi: 7.1.2
-    transitivePeerDependencies:
-      - '@chromatic-com/cypress'
-      - '@chromatic-com/playwright'
-
   '@csstools/color-helpers@5.1.0': {}
 
   '@csstools/css-calc@2.1.4(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)':
@@ -5167,8 +5076,6 @@ snapshots:
     transitivePeerDependencies:
       - '@types/react'
 
-  '@neoconfetti/react@1.0.0': {}
-
   '@nodelib/fs.scandir@2.1.5':
     dependencies:
       '@nodelib/fs.stat': 2.0.5
@@ -5288,10 +5195,6 @@ snapshots:
       - rollup
       - vite
       - webpack
-
-  '@storybook/addon-onboarding@10.0.4(storybook@10.0.4(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.12(@types/node@22.18.13)(yaml@2.8.1)))':
-    dependencies:
-      storybook: 10.0.4(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.12(@types/node@22.18.13)(yaml@2.8.1))
 
   '@storybook/addon-vitest@10.0.4(@vitest/runner@4.0.7)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@10.0.4(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.12(@types/node@22.18.13)(yaml@2.8.1)))(vitest@4.0.7(@types/node@22.18.13)(jsdom@25.0.1)(yaml@2.8.1))':
     dependencies:
@@ -5525,6 +5428,10 @@ snapshots:
   '@types/node@22.18.13':
     dependencies:
       undici-types: 6.21.0
+
+  '@types/papaparse@5.5.0':
+    dependencies:
+      '@types/node': 22.18.13
 
   '@types/parse-json@4.0.2': {}
 
@@ -5862,10 +5769,6 @@ snapshots:
   chalk@5.6.2: {}
 
   check-error@2.1.1: {}
-
-  chromatic@11.29.0: {}
-
-  chromatic@12.2.0: {}
 
   cli-cursor@5.0.0:
     dependencies:
@@ -6220,8 +6123,6 @@ snapshots:
     dependencies:
       flat-cache: 4.0.1
 
-  filesize@10.1.6: {}
-
   fill-range@7.1.1:
     dependencies:
       to-regex-range: 5.0.1
@@ -6314,9 +6215,6 @@ snapshots:
   globals@14.0.0: {}
 
   gopd@1.2.0: {}
-
-  graceful-fs@4.2.11:
-    optional: true
 
   graphemer@1.4.0: {}
 
@@ -6481,12 +6379,6 @@ snapshots:
   json-stable-stringify-without-jsonify@1.0.1: {}
 
   json5@2.2.3: {}
-
-  jsonfile@6.2.0:
-    dependencies:
-      universalify: 2.0.1
-    optionalDependencies:
-      graceful-fs: 4.2.11
 
   keyv@4.5.4:
     dependencies:
@@ -7083,8 +6975,6 @@ snapshots:
   typescript@5.9.3: {}
 
   undici-types@6.21.0: {}
-
-  universalify@2.0.1: {}
 
   unplugin@2.3.10:
     dependencies:
