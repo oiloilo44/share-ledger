@@ -21,6 +21,8 @@ export { ToastNotification } from './ToastNotification';
 export { EmptyState } from './EmptyState';
 export { ConfirmDialog } from './ConfirmDialog';
 export { OfflineBanner } from './OfflineBanner';
+export { PullToRefreshIndicator } from './PullToRefreshIndicator';
+export type { PullToRefreshIndicatorProps } from './PullToRefreshIndicator';
 
 // Feature Components
 export { FilterBar } from './FilterBar';

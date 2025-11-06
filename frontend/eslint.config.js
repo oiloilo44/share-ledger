@@ -14,7 +14,7 @@ const __dirname = path.dirname(__filename);
 
 export default tseslint.config(
   {
-    ignores: ['dist', 'node_modules', '.storybook', 'public'],
+    ignores: ['dist', 'node_modules', '.storybook', 'public', 'scripts'],
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,

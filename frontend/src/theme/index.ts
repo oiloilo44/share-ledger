@@ -85,9 +85,30 @@ export const buildTheme = (mode: PaletteMode = 'light') => {
     components: {
       MuiCssBaseline: {
         styleOverrides: {
+          // 전역 CSS 변수 및 브라우저 호환성 개선
+          ':root': {
+            // iOS Safari 100vh 문제 해결
+            '--vh': '1vh',
+            // 다이나믹 뷰포트 높이 지원 (iOS Safari 15+)
+            '--dvh': '1dvh',
+          },
+          html: {
+            // 모바일 브라우저 터치 스크롤 개선
+            WebkitOverflowScrolling: 'touch',
+            // 폰트 렌더링 최적화
+            WebkitFontSmoothing: 'antialiased',
+            MozOsxFontSmoothing: 'grayscale',
+            // 텍스트 크기 자동 조정 방지 (모바일)
+            WebkitTextSizeAdjust: '100%',
+            textSizeAdjust: '100%',
+          },
           body: {
             backgroundColor: modeTokens.surface.background,
             color: modeTokens.text.primary,
+            // iOS Safari 탭 하이라이트 제거
+            WebkitTapHighlightColor: 'transparent',
+            // 터치 액션 최적화
+            touchAction: 'manipulation',
           },
           // 접근성: 키보드 네비게이션을 위한 포커스 스타일
           '*:focus-visible': {

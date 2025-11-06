@@ -30,6 +30,7 @@ import { useBooks, useCreateBook, useUpdateBook, useDeleteBook } from '../hooks/
 import { BookRole, type BookListItem } from '../types/books';
 import { APIError } from '../lib/api';
 import { ConfirmDialog } from '../components/ConfirmDialog';
+import { PullToRefreshIndicator } from '../components/PullToRefreshIndicator';
 import { useToastStore } from '../stores/toastStore';
 import CollectionsBookmarkRoundedIcon from '@mui/icons-material/CollectionsBookmarkRounded';
 import Diversity3RoundedIcon from '@mui/icons-material/Diversity3Rounded';
@@ -38,6 +39,7 @@ import { FilterBar } from '../components/FilterBar';
 import { ContentSkeleton } from '../components/ContentSkeleton';
 import { EmptyState } from '../components/EmptyState';
 import { containerVariants, itemVariants } from '../utils/animations';
+import { usePullToRefresh } from '../hooks/usePullToRefresh';
 
 type BookDialogMode = 'create' | 'edit' | null;
 
@@ -58,10 +60,17 @@ const roleColors: Record<BookRole, 'primary' | 'default'> = {
 
 export const BooksPage = () => {
   const navigate = useNavigate();
-  const { data: books, isLoading, error } = useBooks();
+  const { data: books, isLoading, error, refetch } = useBooks();
   const createBook = useCreateBook();
   const updateBook = useUpdateBook();
   const deleteBook = useDeleteBook();
+
+  // Pull-to-Refresh
+  const { containerRef, pullDistance, isRefreshing, canRefresh } = usePullToRefresh({
+    onRefresh: async () => {
+      await refetch();
+    },
+  });
 
   const [dialogState, setDialogState] = useState<BookDialogState>({ mode: null });
   const [bookName, setBookName] = useState('');
@@ -197,7 +206,17 @@ export const BooksPage = () => {
   }
 
   return (
-    <Box p={{ xs: 2, sm: 3 }}>
+    <Box
+      ref={containerRef as React.RefObject<HTMLDivElement>}
+      p={{ xs: 2, sm: 3 }}
+      sx={{ position: 'relative', overflowY: 'auto' }}
+    >
+      <PullToRefreshIndicator
+        pullDistance={pullDistance}
+        canRefresh={canRefresh}
+        isRefreshing={isRefreshing}
+      />
+
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
         <Typography variant="h3" component="h1" fontWeight={800}>
           내 가계부

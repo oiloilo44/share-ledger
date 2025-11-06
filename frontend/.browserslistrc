@@ -1,0 +1,16 @@
+# 브라우저 호환성 타겟
+# https://browsersl.ist/
+
+# Production 빌드
+[production]
+>0.5%
+last 2 versions
+Firefox ESR
+not dead
+not IE 11
+
+# Development 빌드
+[development]
+last 1 chrome version
+last 1 firefox version
+last 1 safari version
