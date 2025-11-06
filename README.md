@@ -1,6 +1,6 @@
 # ShareLedger
 
-공동 가계부 협업 도구 ShareLedger의 모놀리포입니다. FastAPI 기반 백엔드와 React + Vite 기반 프런트엔드, 그리고 Supabase 인프라 구성을 포함합니다.
+공유 가계부 ShareLedger의 모놀리포입니다. FastAPI 기반 백엔드와 React + Vite 기반 프런트엔드, 그리고 Supabase 인프라 구성을 포함합니다.
 
 ## 프로젝트 구조
 

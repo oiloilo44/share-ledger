@@ -1,7 +1,7 @@
 {
   "name": "ShareLedger - 공유 가계부",
   "short_name": "ShareLedger",
-  "description": "친구, 가족과 함께 쓰는 협업 가계부",
+  "description": "친구, 가족과 함께 쓰는 공유 가계부",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",

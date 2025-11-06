@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-ShareLedger는 개인 및 공동 재무 관리를 위한 협업 가계부 웹 애플리케이션입니다. FastAPI 백엔드, React PWA 프론트엔드, Supabase BaaS로 구성된 모놀리포 프로젝트입니다.
+ShareLedger는 친구, 가족과 함께 쓰는 공유 가계부 웹 애플리케이션입니다. FastAPI 백엔드, React PWA 프론트엔드, Supabase BaaS로 구성된 모놀리포 프로젝트입니다.
 
 **중요**: 모든 커뮤니케이션과 문서는 반드시 한국어로 작성합니다.
 
