@@ -6,30 +6,30 @@ exports[`Storybook 시각 회귀 스냅샷 > ConfirmDialog/Success 렌더링 스
 
 exports[`Storybook 시각 회귀 스냅샷 > FilterBar/Playground 렌더링 스냅샷 유지 1`] = `
 <div
-  class="MuiStack-root css-1lby378-MuiStack-root"
+  class="MuiStack-root css-HASH-MuiStack-root"
 >
   <h6
-    class="MuiTypography-root MuiTypography-subtitle2 css-1x0mq5c-MuiTypography-root"
+    class="MuiTypography-root MuiTypography-subtitle2 css-HASH-MuiTypography-root"
   >
     상태
   </h6>
   <div
-    class="MuiStack-root css-1vxpuni-MuiStack-root"
+    class="MuiStack-root css-HASH-MuiStack-root"
   >
     <div
-      class="MuiButtonBase-root MuiChip-root MuiChip-filled MuiChip-sizeMedium MuiChip-colorPrimary MuiChip-clickable MuiChip-clickableColorPrimary MuiChip-filledPrimary css-c9bmt5-MuiButtonBase-root-MuiChip-root"
+      class="MuiButtonBase-root MuiChip-root MuiChip-filled MuiChip-sizeMedium MuiChip-colorPrimary MuiChip-clickable MuiChip-clickableColorPrimary MuiChip-filledPrimary css-HASH-MuiButtonBase-root-MuiChip-root"
       role="button"
       tabindex="0"
     >
       <span
-        class="MuiChip-label MuiChip-labelMedium css-1dybbl5-MuiChip-label"
+        class="MuiChip-label MuiChip-labelMedium css-HASH-MuiChip-label"
       >
         <div
-          class="MuiStack-root css-nfwmfk-MuiStack-root"
+          class="MuiStack-root css-HASH-MuiStack-root"
         >
           <svg
             aria-hidden="true"
-            class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-120dh41-MuiSvgIcon-root"
+            class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-HASH-MuiSvgIcon-root"
             data-testid="HistoryRoundedIcon"
             focusable="false"
             viewBox="0 0 24 24"
@@ -39,12 +39,12 @@ exports[`Storybook 시각 회귀 스냅샷 > FilterBar/Playground 렌더링 스�
             />
           </svg>
           <span
-            class="MuiTypography-root MuiTypography-body2 css-bvuapi-MuiTypography-root"
+            class="MuiTypography-root MuiTypography-body2 css-HASH-MuiTypography-root"
           >
             전체
           </span>
           <span
-            class="MuiTypography-root MuiTypography-caption css-mpaqru-MuiTypography-root"
+            class="MuiTypography-root MuiTypography-caption css-HASH-MuiTypography-root"
           >
             12
           </span>
@@ -52,19 +52,19 @@ exports[`Storybook 시각 회귀 스냅샷 > FilterBar/Playground 렌더링 스�
       </span>
     </div>
     <div
-      class="MuiButtonBase-root MuiChip-root MuiChip-outlined MuiChip-sizeMedium MuiChip-colorDefault MuiChip-clickable MuiChip-clickableColorDefault MuiChip-outlinedDefault css-18i5t4e-MuiButtonBase-root-MuiChip-root"
+      class="MuiButtonBase-root MuiChip-root MuiChip-outlined MuiChip-sizeMedium MuiChip-colorDefault MuiChip-clickable MuiChip-clickableColorDefault MuiChip-outlinedDefault css-HASH-MuiButtonBase-root-MuiChip-root"
       role="button"
       tabindex="0"
     >
       <span
-        class="MuiChip-label MuiChip-labelMedium css-16cgrcw-MuiChip-label"
+        class="MuiChip-label MuiChip-labelMedium css-HASH-MuiChip-label"
       >
         <div
-          class="MuiStack-root css-nfwmfk-MuiStack-root"
+          class="MuiStack-root css-HASH-MuiStack-root"
         >
           <svg
             aria-hidden="true"
-            class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-120dh41-MuiSvgIcon-root"
+            class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-HASH-MuiSvgIcon-root"
             data-testid="TaskAltRoundedIcon"
             focusable="false"
             viewBox="0 0 24 24"
@@ -74,12 +74,12 @@ exports[`Storybook 시각 회귀 스냅샷 > FilterBar/Playground 렌더링 스�
             />
           </svg>
           <span
-            class="MuiTypography-root MuiTypography-body2 css-bvuapi-MuiTypography-root"
+            class="MuiTypography-root MuiTypography-body2 css-HASH-MuiTypography-root"
           >
             진행중
           </span>
           <span
-            class="MuiTypography-root MuiTypography-caption css-mpaqru-MuiTypography-root"
+            class="MuiTypography-root MuiTypography-caption css-HASH-MuiTypography-root"
           >
             6
           </span>
@@ -87,19 +87,19 @@ exports[`Storybook 시각 회귀 스냅샷 > FilterBar/Playground 렌더링 스�
       </span>
     </div>
     <div
-      class="MuiButtonBase-root MuiChip-root MuiChip-outlined MuiChip-sizeMedium MuiChip-colorDefault MuiChip-clickable MuiChip-clickableColorDefault MuiChip-outlinedDefault css-18i5t4e-MuiButtonBase-root-MuiChip-root"
+      class="MuiButtonBase-root MuiChip-root MuiChip-outlined MuiChip-sizeMedium MuiChip-colorDefault MuiChip-clickable MuiChip-clickableColorDefault MuiChip-outlinedDefault css-HASH-MuiButtonBase-root-MuiChip-root"
       role="button"
       tabindex="0"
     >
       <span
-        class="MuiChip-label MuiChip-labelMedium css-16cgrcw-MuiChip-label"
+        class="MuiChip-label MuiChip-labelMedium css-HASH-MuiChip-label"
       >
         <div
-          class="MuiStack-root css-nfwmfk-MuiStack-root"
+          class="MuiStack-root css-HASH-MuiStack-root"
         >
           <svg
             aria-hidden="true"
-            class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-120dh41-MuiSvgIcon-root"
+            class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-HASH-MuiSvgIcon-root"
             data-testid="ShieldMoonRoundedIcon"
             focusable="false"
             viewBox="0 0 24 24"
@@ -109,12 +109,12 @@ exports[`Storybook 시각 회귀 스냅샷 > FilterBar/Playground 렌더링 스�
             />
           </svg>
           <span
-            class="MuiTypography-root MuiTypography-body2 css-bvuapi-MuiTypography-root"
+            class="MuiTypography-root MuiTypography-body2 css-HASH-MuiTypography-root"
           >
             대기
           </span>
           <span
-            class="MuiTypography-root MuiTypography-caption css-mpaqru-MuiTypography-root"
+            class="MuiTypography-root MuiTypography-caption css-HASH-MuiTypography-root"
           >
             4
           </span>
@@ -122,19 +122,19 @@ exports[`Storybook 시각 회귀 스냅샷 > FilterBar/Playground 렌더링 스�
       </span>
     </div>
     <div
-      class="MuiButtonBase-root MuiChip-root MuiChip-outlined MuiChip-sizeMedium MuiChip-colorDefault MuiChip-clickable MuiChip-clickableColorDefault MuiChip-outlinedDefault css-18i5t4e-MuiButtonBase-root-MuiChip-root"
+      class="MuiButtonBase-root MuiChip-root MuiChip-outlined MuiChip-sizeMedium MuiChip-colorDefault MuiChip-clickable MuiChip-clickableColorDefault MuiChip-outlinedDefault css-HASH-MuiButtonBase-root-MuiChip-root"
       role="button"
       tabindex="0"
     >
       <span
-        class="MuiChip-label MuiChip-labelMedium css-16cgrcw-MuiChip-label"
+        class="MuiChip-label MuiChip-labelMedium css-HASH-MuiChip-label"
       >
         <div
-          class="MuiStack-root css-nfwmfk-MuiStack-root"
+          class="MuiStack-root css-HASH-MuiStack-root"
         >
           <svg
             aria-hidden="true"
-            class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-120dh41-MuiSvgIcon-root"
+            class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-HASH-MuiSvgIcon-root"
             data-testid="PersonRoundedIcon"
             focusable="false"
             viewBox="0 0 24 24"
@@ -144,12 +144,12 @@ exports[`Storybook 시각 회귀 스냅샷 > FilterBar/Playground 렌더링 스�
             />
           </svg>
           <span
-            class="MuiTypography-root MuiTypography-body2 css-bvuapi-MuiTypography-root"
+            class="MuiTypography-root MuiTypography-body2 css-HASH-MuiTypography-root"
           >
             소유자
           </span>
           <span
-            class="MuiTypography-root MuiTypography-caption css-mpaqru-MuiTypography-root"
+            class="MuiTypography-root MuiTypography-caption css-HASH-MuiTypography-root"
           >
             2
           </span>
@@ -162,21 +162,21 @@ exports[`Storybook 시각 회귀 스냅샷 > FilterBar/Playground 렌더링 스�
 
 exports[`Storybook 시각 회귀 스냅샷 > ToastNotification/Error 렌더링 스냅샷 유지 1`] = `
 <div
-  class="MuiStack-root css-1x33toh-MuiStack-root"
+  class="MuiStack-root css-HASH-MuiStack-root"
 >
   <button
-    class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary css-74d805-MuiButtonBase-root-MuiButton-root"
+    class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary css-HASH-MuiButtonBase-root-MuiButton-root"
     tabindex="0"
     type="button"
   >
     토스트 다시 보기
   </button>
   <div
-    class="MuiSnackbar-root MuiSnackbar-anchorOriginBottomCenter css-gy7oyn-MuiSnackbar-root"
+    class="MuiSnackbar-root MuiSnackbar-anchorOriginBottomCenter css-HASH-MuiSnackbar-root"
     role="presentation"
   >
     <div
-      class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 css-iw4dj3-MuiPaper-root"
+      class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 css-HASH-MuiPaper-root"
       direction="up"
       style="--Paper-shadow: none; opacity: 1; transform: scale(1, 1); transition: opacity 225ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,transform 150ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;"
     >
@@ -185,7 +185,7 @@ exports[`Storybook 시각 회귀 스냅샷 > ToastNotification/Error 렌더링 �
       >
         <svg
           aria-hidden="true"
-          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1umw9bq-MuiSvgIcon-root"
+          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-HASH-MuiSvgIcon-root"
           data-testid="ReportGmailerrorredRoundedIcon"
           focusable="false"
           viewBox="0 0 24 24"
@@ -204,27 +204,28 @@ exports[`Storybook 시각 회귀 스냅샷 > ToastNotification/Error 렌더링 �
         </svg>
       </div>
       <div
-        class="MuiStack-root css-1nbyx9h-MuiStack-root"
+        class="MuiStack-root css-HASH-MuiStack-root"
       >
         <div
-          class="MuiTypography-root MuiTypography-body1 MuiTypography-gutterBottom MuiAlertTitle-root css-tw30nk-MuiTypography-root-MuiAlertTitle-root"
+          class="MuiTypography-root MuiTypography-body1 MuiTypography-gutterBottom MuiAlertTitle-root css-HASH-MuiTypography-root-MuiAlertTitle-root"
         >
           저장 실패
         </div>
         <p
-          class="MuiTypography-root MuiTypography-body2 css-1skqokt-MuiTypography-root"
+          class="MuiTypography-root MuiTypography-body2 css-HASH-MuiTypography-root"
         >
-          가계부를 저장하지 못했습니다. 잠시 후 다시 시도해주세요.
+          가계부를 저장하지 못했습니다.
+잠시 후 다시 시도해주세요.
         </p>
       </div>
       <button
-        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-edgeEnd MuiIconButton-sizeSmall css-w19nvf-MuiButtonBase-root-MuiIconButton-root"
+        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-edgeEnd MuiIconButton-sizeSmall css-HASH-MuiButtonBase-root-MuiIconButton-root"
         tabindex="0"
         type="button"
       >
         <svg
           aria-hidden="true"
-          class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-120dh41-MuiSvgIcon-root"
+          class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-HASH-MuiSvgIcon-root"
           data-testid="CloseRoundedIcon"
           focusable="false"
           viewBox="0 0 24 24"
@@ -241,21 +242,21 @@ exports[`Storybook 시각 회귀 스냅샷 > ToastNotification/Error 렌더링 �
 
 exports[`Storybook 시각 회귀 스냅샷 > ToastNotification/Warning 렌더링 스냅샷 유지 1`] = `
 <div
-  class="MuiStack-root css-1x33toh-MuiStack-root"
+  class="MuiStack-root css-HASH-MuiStack-root"
 >
   <button
-    class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary css-74d805-MuiButtonBase-root-MuiButton-root"
+    class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary css-HASH-MuiButtonBase-root-MuiButton-root"
     tabindex="0"
     type="button"
   >
     토스트 다시 보기
   </button>
   <div
-    class="MuiSnackbar-root MuiSnackbar-anchorOriginBottomCenter css-gy7oyn-MuiSnackbar-root"
+    class="MuiSnackbar-root MuiSnackbar-anchorOriginBottomCenter css-HASH-MuiSnackbar-root"
     role="presentation"
   >
     <div
-      class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 css-10epboq-MuiPaper-root"
+      class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 css-HASH-MuiPaper-root"
       direction="up"
       style="--Paper-shadow: none; opacity: 1; transform: scale(1, 1); transition: opacity 225ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,transform 150ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;"
     >
@@ -264,7 +265,7 @@ exports[`Storybook 시각 회귀 스냅샷 > ToastNotification/Warning 렌더링
       >
         <svg
           aria-hidden="true"
-          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1umw9bq-MuiSvgIcon-root"
+          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-HASH-MuiSvgIcon-root"
           data-testid="WarningAmberRoundedIcon"
           focusable="false"
           viewBox="0 0 24 24"
@@ -275,27 +276,28 @@ exports[`Storybook 시각 회귀 스냅샷 > ToastNotification/Warning 렌더링
         </svg>
       </div>
       <div
-        class="MuiStack-root css-1nbyx9h-MuiStack-root"
+        class="MuiStack-root css-HASH-MuiStack-root"
       >
         <div
-          class="MuiTypography-root MuiTypography-body1 MuiTypography-gutterBottom MuiAlertTitle-root css-tw30nk-MuiTypography-root-MuiAlertTitle-root"
+          class="MuiTypography-root MuiTypography-body1 MuiTypography-gutterBottom MuiAlertTitle-root css-HASH-MuiTypography-root-MuiAlertTitle-root"
         >
           확인이 필요합니다
         </div>
         <p
-          class="MuiTypography-root MuiTypography-body2 css-1skqokt-MuiTypography-root"
+          class="MuiTypography-root MuiTypography-body2 css-HASH-MuiTypography-root"
         >
-          멤버 초대가 아직 완료되지 않았습니다. 다시 보내시겠어요?
+          멤버 초대가 아직 완료되지 않았습니다.
+다시 보내시겠어요?
         </p>
       </div>
       <button
-        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-edgeEnd MuiIconButton-sizeSmall css-ome8xj-MuiButtonBase-root-MuiIconButton-root"
+        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-edgeEnd MuiIconButton-sizeSmall css-HASH-MuiButtonBase-root-MuiIconButton-root"
         tabindex="0"
         type="button"
       >
         <svg
           aria-hidden="true"
-          class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-120dh41-MuiSvgIcon-root"
+          class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-HASH-MuiSvgIcon-root"
           data-testid="CloseRoundedIcon"
           focusable="false"
           viewBox="0 0 24 24"

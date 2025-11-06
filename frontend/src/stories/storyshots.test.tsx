@@ -1,5 +1,6 @@
 import { render } from '@testing-library/react';
-import { composeStories } from '@storybook/react';
+import { composeStories } from '@storybook/react-vite';
+import { describe, it, expect } from 'vitest';
 import * as ConfirmDialogStories from './ConfirmDialog.stories';
 import * as ToastStories from './ToastNotification.stories';
 import * as FilterBarStories from './FilterBar.stories';
