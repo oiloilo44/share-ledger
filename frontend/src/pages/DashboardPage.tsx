@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { motion } from 'framer-motion';
 import Grid2 from '@mui/material/Grid2';
 import {
   Alert,
@@ -26,6 +27,7 @@ import { APIError } from '../lib/api';
 import { ContentSkeleton } from '../components/ContentSkeleton';
 import { EmptyState } from '../components/EmptyState';
 import { formatAmount } from '../lib/format';
+import { containerVariants, itemVariants } from '../utils/animations';
 
 export const DashboardPage = () => {
   const navigate = useNavigate();
@@ -47,11 +49,10 @@ export const DashboardPage = () => {
 
   // 첫 번째 가계부의 이번 달 내역 가져오기
   const firstBookId = books?.[0]?.id;
-  const { data: entries, isLoading: entriesLoading } = useEntries(
-    firstBookId ?? '',
-    { fromDate, toDate },
-    { enabled: !!firstBookId },
-  );
+  const { data: entries, isLoading: entriesLoading } = useEntries(firstBookId ?? '', {
+    fromDate,
+    toDate,
+  });
 
   const isLoading = booksLoading || (entriesLoading && !!firstBookId);
   const hasBooks = (books?.length ?? 0) > 0;
@@ -145,9 +146,16 @@ export const DashboardPage = () => {
         </Button>
       </Stack>
 
-      <Grid2 container spacing={3}>
+      <Grid2
+        container
+        spacing={3}
+        component={motion.div}
+        initial="hidden"
+        animate="visible"
+        variants={containerVariants}
+      >
         {/* 이번 달 지출 카드 */}
-        <Grid2 size={{ xs: 12, md: 6 }}>
+        <Grid2 size={{ xs: 12, md: 6 }} component={motion.div} variants={itemVariants}>
           <Card
             sx={{
               height: '100%',
@@ -213,7 +221,7 @@ export const DashboardPage = () => {
         </Grid2>
 
         {/* 이번 달 수입 카드 */}
-        <Grid2 size={{ xs: 12, md: 6 }}>
+        <Grid2 size={{ xs: 12, md: 6 }} component={motion.div} variants={itemVariants}>
           <Card
             sx={{
               height: '100%',
@@ -260,7 +268,7 @@ export const DashboardPage = () => {
         </Grid2>
 
         {/* 최근 내역 카드 */}
-        <Grid2 size={{ xs: 12 }}>
+        <Grid2 size={{ xs: 12 }} component={motion.div} variants={itemVariants}>
           <Card>
             <CardContent sx={{ p: 3 }}>
               <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
@@ -334,7 +342,7 @@ export const DashboardPage = () => {
         </Grid2>
 
         {/* 내 가계부 카드 */}
-        <Grid2 size={{ xs: 12 }}>
+        <Grid2 size={{ xs: 12 }} component={motion.div} variants={itemVariants}>
           <Card>
             <CardContent sx={{ p: 3 }}>
               <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>

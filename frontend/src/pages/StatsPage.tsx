@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { motion } from 'framer-motion';
 import {
   Box,
   Card,
@@ -34,6 +35,7 @@ import { EmptyState } from '../components/EmptyState';
 import { entriesApi } from '../lib/api';
 import { formatAmount, formatCurrency } from '../lib/format';
 import { exportEntriesAsCSV, exportEntriesAsXLSX } from '../lib/export';
+import { containerVariants, itemVariants } from '../utils/animations';
 
 const PIE_COLORS = ['#5B8FF9', '#61DDAA', '#65789B', '#F6BD16', '#7262fd', '#78D3F8'];
 
@@ -118,7 +120,7 @@ export const StatsPage = () => {
   };
 
   if (isBooksLoading) {
-    return <ContentSkeleton lines={6} />;
+    return <ContentSkeleton variant="card-grid" items={3} />;
   }
 
   if (!books || books.length === 0) {
@@ -178,12 +180,26 @@ export const StatsPage = () => {
       </Stack>
 
       {isStatsLoading || !stats ? (
-        <ContentSkeleton lines={8} />
+        <ContentSkeleton variant="card-grid" items={4} />
       ) : (
         <Stack spacing={4}>
-          <Grid container spacing={3}>
+          <Grid
+            container
+            spacing={3}
+            component={motion.div}
+            initial="hidden"
+            animate="visible"
+            variants={containerVariants}
+          >
             {summaryCards.map((card) => (
-              <Grid item xs={12} md={4} key={card.label}>
+              <Grid
+                item
+                xs={12}
+                md={4}
+                key={card.label}
+                component={motion.div}
+                variants={itemVariants}
+              >
                 <Card sx={{ borderLeft: 4, borderColor: card.color }}>
                   <CardContent>
                     <Typography variant="subtitle2" color="text.secondary">
@@ -198,8 +214,15 @@ export const StatsPage = () => {
             ))}
           </Grid>
 
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
+          <Grid
+            container
+            spacing={3}
+            component={motion.div}
+            initial="hidden"
+            animate="visible"
+            variants={containerVariants}
+          >
+            <Grid item xs={12} md={6} component={motion.div} variants={itemVariants}>
               <Card sx={{ height: 360 }}>
                 <CardContent sx={{ height: '100%' }}>
                   <Typography variant="h6" gutterBottom>
@@ -236,7 +259,7 @@ export const StatsPage = () => {
                 </CardContent>
               </Card>
             </Grid>
-            <Grid item xs={12} md={6}>
+            <Grid item xs={12} md={6} component={motion.div} variants={itemVariants}>
               <Card sx={{ height: 360 }}>
                 <CardContent sx={{ height: '100%' }}>
                   <Typography variant="h6" gutterBottom>
@@ -273,7 +296,7 @@ export const StatsPage = () => {
             </Grid>
           </Grid>
 
-          <Card>
+          <Card component={motion.div} initial="hidden" animate="visible" variants={itemVariants}>
             <CardContent>
               <Typography variant="h6" gutterBottom>
                 상위 지출 항목

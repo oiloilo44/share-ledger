@@ -1,33 +1,66 @@
+import { lazy, Suspense } from 'react';
 import { createBrowserRouter } from 'react-router-dom';
-import { DashboardPage } from './pages/DashboardPage';
-import { LoginPage } from './pages/LoginPage';
-import { SignupPage } from './pages/SignupPage';
-import { ResetPasswordPage } from './pages/ResetPasswordPage';
-import { BooksPage } from './pages/BooksPage';
-import { BookDetailPage } from './pages/BookDetailPage';
-import { HistoryPage } from './pages/HistoryPage';
-import { BookSettingsPage } from './pages/BookSettingsPage';
-import { StatsPage } from './pages/StatsPage';
-import { ComponentDemoPage } from './pages/ComponentDemoPage';
 import { RootLayout } from './components/RootLayout';
 import { ProtectedRoute } from './components/ProtectedRoute';
+
+// Lazy load pages
+const DashboardPage = lazy(() =>
+  import('./pages/DashboardPage').then((m) => ({ default: m.DashboardPage })),
+);
+const LoginPage = lazy(() => import('./pages/LoginPage').then((m) => ({ default: m.LoginPage })));
+const SignupPage = lazy(() =>
+  import('./pages/SignupPage').then((m) => ({ default: m.SignupPage })),
+);
+const ResetPasswordPage = lazy(() =>
+  import('./pages/ResetPasswordPage').then((m) => ({ default: m.ResetPasswordPage })),
+);
+const BooksPage = lazy(() => import('./pages/BooksPage').then((m) => ({ default: m.BooksPage })));
+const BookDetailPage = lazy(() =>
+  import('./pages/BookDetailPage').then((m) => ({ default: m.BookDetailPage })),
+);
+const HistoryPage = lazy(() =>
+  import('./pages/HistoryPage').then((m) => ({ default: m.HistoryPage })),
+);
+const BookSettingsPage = lazy(() =>
+  import('./pages/BookSettingsPage').then((m) => ({ default: m.BookSettingsPage })),
+);
+const StatsPage = lazy(() => import('./pages/StatsPage').then((m) => ({ default: m.StatsPage })));
+const ComponentDemoPage = lazy(() =>
+  import('./pages/ComponentDemoPage').then((m) => ({ default: m.ComponentDemoPage })),
+);
 
 export const appRouter = createBrowserRouter([
   {
     path: '/login',
-    element: <LoginPage />,
+    element: (
+      <Suspense fallback={null}>
+        <LoginPage />
+      </Suspense>
+    ),
   },
   {
     path: '/signup',
-    element: <SignupPage />,
+    element: (
+      <Suspense fallback={null}>
+        <SignupPage />
+      </Suspense>
+    ),
   },
   {
     path: '/reset-password',
-    element: <ResetPasswordPage />,
+    element: (
+      <Suspense fallback={null}>
+        <ResetPasswordPage />
+      </Suspense>
+    ),
   },
   {
     path: '/demo',
-    element: <ComponentDemoPage />,
+    element: (
+      <Suspense fallback={null}>
+        <ComponentDemoPage />
+      </Suspense>
+    ),
   },
   {
     path: '/',
@@ -38,27 +71,51 @@ export const appRouter = createBrowserRouter([
         children: [
           {
             index: true,
-            element: <DashboardPage />,
+            element: (
+              <Suspense fallback={null}>
+                <DashboardPage />
+              </Suspense>
+            ),
           },
           {
             path: 'books',
-            element: <BooksPage />,
+            element: (
+              <Suspense fallback={null}>
+                <BooksPage />
+              </Suspense>
+            ),
           },
           {
             path: 'stats',
-            element: <StatsPage />,
+            element: (
+              <Suspense fallback={null}>
+                <StatsPage />
+              </Suspense>
+            ),
           },
           {
             path: 'books/:bookId',
-            element: <BookDetailPage />,
+            element: (
+              <Suspense fallback={null}>
+                <BookDetailPage />
+              </Suspense>
+            ),
           },
           {
             path: 'books/:bookId/history',
-            element: <HistoryPage />,
+            element: (
+              <Suspense fallback={null}>
+                <HistoryPage />
+              </Suspense>
+            ),
           },
           {
             path: 'books/:bookId/settings',
-            element: <BookSettingsPage />,
+            element: (
+              <Suspense fallback={null}>
+                <BookSettingsPage />
+              </Suspense>
+            ),
           },
         ],
       },

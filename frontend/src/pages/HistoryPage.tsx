@@ -5,6 +5,7 @@
 
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import {
   Box,
   Button,
@@ -34,6 +35,7 @@ import { ConfirmDialog } from '../components/ConfirmDialog';
 import { useToastStore } from '../stores/toastStore';
 import { ContentSkeleton } from '../components/ContentSkeleton';
 import { EmptyState } from '../components/EmptyState';
+import { containerVariants, itemVariants } from '../utils/animations';
 
 /**
  * 액션 타입별 아이콘 반환
@@ -234,7 +236,13 @@ export const HistoryPage = () => {
           ]}
         />
       ) : (
-        <Stack spacing={2}>
+        <Stack
+          spacing={2}
+          component={motion.div}
+          initial="hidden"
+          animate="visible"
+          variants={containerVariants}
+        >
           {historyItems.map((item) => {
             const snapshotData = parseSnapshot(item.snapshot);
             if (!snapshotData) return null;
@@ -242,6 +250,8 @@ export const HistoryPage = () => {
             return (
               <Card
                 key={item.id}
+                component={motion.div}
+                variants={itemVariants}
                 sx={{
                   transition: 'all 0.15s ease-in-out',
                   '&:hover': {

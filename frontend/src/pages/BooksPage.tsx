@@ -37,6 +37,7 @@ import AssignmentTurnedInRoundedIcon from '@mui/icons-material/AssignmentTurnedI
 import { FilterBar } from '../components/FilterBar';
 import { ContentSkeleton } from '../components/ContentSkeleton';
 import { EmptyState } from '../components/EmptyState';
+import { containerVariants, itemVariants } from '../utils/animations';
 
 type BookDialogMode = 'create' | 'edit' | null;
 
@@ -261,15 +262,7 @@ export const BooksPage = () => {
           component={motion.div}
           initial="hidden"
           animate="visible"
-          variants={{
-            hidden: { opacity: 0 },
-            visible: {
-              opacity: 1,
-              transition: {
-                staggerChildren: 0.05,
-              },
-            },
-          }}
+          variants={containerVariants}
         >
           {filteredBooks.map((book) => (
             <Grid
@@ -279,14 +272,7 @@ export const BooksPage = () => {
               md={4}
               key={book.id}
               component={motion.div}
-              variants={{
-                hidden: { opacity: 0, y: 20 },
-                visible: { opacity: 1, y: 0 },
-              }}
-              transition={{
-                duration: 0.3,
-                ease: [0.4, 0, 0.2, 1],
-              }}
+              variants={itemVariants}
             >
               <Card
                 sx={{

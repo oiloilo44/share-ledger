@@ -2,7 +2,7 @@
  * 가계부 상세 페이지 (내역 목록 · 고급 필터 · 반복 관리)
  */
 
-import { useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import {
   Alert,
@@ -59,12 +59,21 @@ import { ConfirmDialog } from '../components/ConfirmDialog';
 import { useToastStore } from '../stores/toastStore';
 import { ContentSkeleton } from '../components/ContentSkeleton';
 import { EmptyState } from '../components/EmptyState';
-import { RecurringEntriesSection } from '../components/RecurringEntriesSection';
-import { BulkUploadWizard } from '../components/BulkUploadWizard';
 import { useOfflineStore } from '../stores/offlineStore';
 import { BottomSheet } from '../components/BottomSheet';
 import { AmountInput } from '../components/AmountInput';
 import { FilterBar } from '../components/FilterBar';
+import { containerVariants, itemVariants } from '../utils/animations';
+
+// Lazy load heavy components
+const RecurringEntriesSection = lazy(() =>
+  import('../components/RecurringEntriesSection').then((m) => ({
+    default: m.RecurringEntriesSection,
+  })),
+);
+const BulkUploadWizard = lazy(() =>
+  import('../components/BulkUploadWizard').then((m) => ({ default: m.BulkUploadWizard })),
+);
 
 type EntryDialogMode = 'create' | 'edit' | null;
 
@@ -444,7 +453,7 @@ export const BookDetailPage = () => {
       handleCloseDialog();
     } catch (err) {
       if (!navigator.onLine) {
-        const queued = enqueueOfflineEntry({ ...payload, bookId, timestamp: Date.now() });
+        const queued = enqueueOfflineEntry({ ...payload, bookId: bookId!, timestamp: Date.now() });
         useOfflineStore.getState().setPendingEntries(queued);
         showToast('오프라인 상태입니다. 연결 시 자동 업로드됩니다.', {
           severity: 'info',
@@ -585,7 +594,15 @@ export const BookDetailPage = () => {
           >
             내보내기
           </Button>
-          <BulkUploadWizard bookId={bookId} existingCategories={existingCategories} />
+          <Suspense
+            fallback={
+              <Button variant="outlined" disabled>
+                일괄 업로드
+              </Button>
+            }
+          >
+            <BulkUploadWizard bookId={bookId} existingCategories={existingCategories} />
+          </Suspense>
           <Button
             variant="contained"
             size="large"
@@ -638,29 +655,14 @@ export const BookDetailPage = () => {
           component={motion.div}
           initial="hidden"
           animate="visible"
-          variants={{
-            hidden: { opacity: 0 },
-            visible: {
-              opacity: 1,
-              transition: {
-                staggerChildren: 0.1,
-              },
-            },
-          }}
+          variants={containerVariants}
         >
           {groupedEntries.map((group) => (
             <Card
               key={group.date}
               variant="outlined"
               component={motion.div}
-              variants={{
-                hidden: { opacity: 0, y: 20 },
-                visible: { opacity: 1, y: 0 },
-              }}
-              transition={{
-                duration: 0.3,
-                ease: [0.4, 0, 0.2, 1],
-              }}
+              variants={itemVariants}
             >
               <CardContent>
                 <Stack
@@ -708,7 +710,9 @@ export const BookDetailPage = () => {
       )}
 
       <Box mt={4}>
-        <RecurringEntriesSection bookId={bookId} />
+        <Suspense fallback={<ContentSkeleton variant="list" items={3} />}>
+          <RecurringEntriesSection bookId={bookId} />
+        </Suspense>
       </Box>
 
       <BottomSheet
