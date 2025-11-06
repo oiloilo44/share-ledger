@@ -40,3 +40,7 @@ docs/
 
 # Development server logs
 .devserver/
+
+# Lighthouse/Chrome DevTools temporary files
+undefined:/
+lighthouse.*/
