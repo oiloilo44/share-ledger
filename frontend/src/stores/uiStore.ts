@@ -20,21 +20,13 @@ const getStoredThemeMode = (): PaletteMode | null => {
   return null;
 };
 
-// 시스템 다크 모드 설정 감지
-const getSystemThemeMode = (): PaletteMode => {
-  if (typeof window !== 'undefined' && window.matchMedia) {
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  }
-  return 'light';
-};
-
-// 초기 테마 모드 결정: localStorage > 시스템 설정 > 'light'
+// 초기 테마 모드 결정: localStorage > 'dark' (기본값)
 const getInitialThemeMode = (): PaletteMode => {
   const stored = getStoredThemeMode();
   if (stored) {
     return stored;
   }
-  return getSystemThemeMode();
+  return 'dark';
 };
 
 export const useUIStore = create<UIState>((set, get) => ({
