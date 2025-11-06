@@ -3,6 +3,8 @@
  * 백엔드 models/entries.py와 동기화
  */
 
+export type EntryFrequency = 'once' | 'monthly' | 'weekly';
+
 export interface Entry {
   id: string;
   book_id: string;
@@ -11,6 +13,10 @@ export interface Entry {
   description: string;
   amount: number; // 단위: 원
   category: string | null;
+  end_date: string; // ISO date format (YYYY-MM-DD) - 반복 종료일
+  frequency: EntryFrequency; // 반복 주기
+  day_of_month: number | null; // 월간 반복 날짜 (1-31)
+  day_of_week: number | null; // 주간 반복 요일 (0=일요일, 6=토요일)
   created_at: string; // ISO datetime
   updated_at: string; // ISO datetime
 }
@@ -20,6 +26,10 @@ export interface EntryCreate {
   description: string; // 1-200자
   amount: number; // 0이 아닌 값
   category?: string | null; // 최대 80자
+  end_date?: string | null; // 반복 종료일
+  frequency?: EntryFrequency; // 반복 주기 (기본값: 'once')
+  day_of_month?: number | null; // 월간 반복 날짜 (1-31)
+  day_of_week?: number | null; // 주간 반복 요일 (0-6)
 }
 
 export interface EntryUpdate {
@@ -27,6 +37,19 @@ export interface EntryUpdate {
   description: string;
   amount: number;
   category?: string | null;
+  end_date?: string | null; // 반복 종료일
+  frequency?: EntryFrequency; // 반복 주기 (기본값: 'once')
+  day_of_month?: number | null; // 월간 반복 날짜 (1-31)
+  day_of_week?: number | null; // 주간 반복 요일 (0-6)
+}
+
+/**
+ * 전개된 내역 (반복 내역의 특정 발생일 인스턴스)
+ */
+export interface ExpandedEntry extends Entry {
+  original_id: string; // 원본 entry ID
+  occurrence_date: string; // 실제 발생 날짜 (ISO date)
+  is_projected: boolean; // 미래 내역 여부
 }
 
 export enum EntryHistoryAction {

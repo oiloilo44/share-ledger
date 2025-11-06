@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import date, datetime
 from enum import Enum
-from typing import Any
+from typing import Any, Literal
 from uuid import UUID
 
 from pydantic import BaseModel, Field, field_validator
@@ -20,6 +20,10 @@ class Entry(BaseModel):
     description: str
     amount: int
     category: str | None
+    end_date: date
+    frequency: Literal["once", "monthly", "weekly"]
+    day_of_month: int | None
+    day_of_week: int | None
     created_at: datetime
     updated_at: datetime
 
@@ -31,6 +35,12 @@ class EntryCreate(BaseModel):
     description: str = Field(min_length=1, max_length=200)
     amount: int = Field(description="금액(단위: 원)")
     category: str | None = Field(default=None, max_length=80)
+    end_date: date | None = Field(default=None, description="종료일 (반복 내역용)")
+    frequency: Literal["once", "monthly", "weekly"] = Field(default="once", description="반복 주기")
+    day_of_month: int | None = Field(default=None, ge=1, le=31, description="월간 반복 날짜 (1-31)")
+    day_of_week: int | None = Field(
+        default=None, ge=0, le=6, description="주간 반복 요일 (0=일요일, 6=토요일)"
+    )
 
     @field_validator("amount")
     @classmethod
@@ -55,6 +65,12 @@ class EntryUpdate(BaseModel):
     description: str = Field(min_length=1, max_length=200)
     amount: int = Field(description="금액(단위: 원)")
     category: str | None = Field(default=None, max_length=80)
+    end_date: date | None = Field(default=None, description="종료일 (반복 내역용)")
+    frequency: Literal["once", "monthly", "weekly"] = Field(default="once", description="반복 주기")
+    day_of_month: int | None = Field(default=None, ge=1, le=31, description="월간 반복 날짜 (1-31)")
+    day_of_week: int | None = Field(
+        default=None, ge=0, le=6, description="주간 반복 요일 (0=일요일, 6=토요일)"
+    )
 
     @field_validator("amount")
     @classmethod

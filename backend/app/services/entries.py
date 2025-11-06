@@ -531,17 +531,24 @@ class EntryService:
         user_id: UUID,
         payload: EntryCreate,
     ) -> dict[str, Any]:
-        response = self.client.rpc(
-            "create_entry_with_history",
-            {
-                "p_book_id": str(book_id),
-                "p_user_id": str(user_id),
-                "p_entry_date": payload.entry_date.isoformat(),
-                "p_description": payload.description,
-                "p_amount": str(payload.amount),
-                "p_category": self._normalize_category(payload.category),
-            },
-        ).execute()
+        params = {
+            "p_book_id": str(book_id),
+            "p_user_id": str(user_id),
+            "p_entry_date": payload.entry_date.isoformat(),
+            "p_description": payload.description,
+            "p_amount": str(payload.amount),
+            "p_category": self._normalize_category(payload.category),
+            "p_frequency": payload.frequency,
+        }
+        # 반복 내역 파라미터 추가
+        if payload.end_date is not None:
+            params["p_end_date"] = payload.end_date.isoformat()
+        if payload.day_of_month is not None:
+            params["p_day_of_month"] = payload.day_of_month
+        if payload.day_of_week is not None:
+            params["p_day_of_week"] = payload.day_of_week
+
+        response = self.client.rpc("create_entry_with_history", params).execute()
         data = response.data
         if not data:
             raise EntryServiceError(
@@ -557,18 +564,25 @@ class EntryService:
         user_id: UUID,
         payload: EntryUpdate,
     ) -> dict[str, Any]:
-        response = self.client.rpc(
-            "update_entry_with_history",
-            {
-                "p_entry_id": str(entry_id),
-                "p_book_id": str(book_id),
-                "p_user_id": str(user_id),
-                "p_entry_date": payload.entry_date.isoformat(),
-                "p_description": payload.description,
-                "p_amount": str(payload.amount),
-                "p_category": self._normalize_category(payload.category),
-            },
-        ).execute()
+        params = {
+            "p_entry_id": str(entry_id),
+            "p_book_id": str(book_id),
+            "p_user_id": str(user_id),
+            "p_entry_date": payload.entry_date.isoformat(),
+            "p_description": payload.description,
+            "p_amount": str(payload.amount),
+            "p_category": self._normalize_category(payload.category),
+            "p_frequency": payload.frequency,
+        }
+        # 반복 내역 파라미터 추가
+        if payload.end_date is not None:
+            params["p_end_date"] = payload.end_date.isoformat()
+        if payload.day_of_month is not None:
+            params["p_day_of_month"] = payload.day_of_month
+        if payload.day_of_week is not None:
+            params["p_day_of_week"] = payload.day_of_week
+
+        response = self.client.rpc("update_entry_with_history", params).execute()
         data = response.data
         if not data:
             raise EntryServiceError(
@@ -659,6 +673,10 @@ class EntryService:
             description=row["description"],
             amount=self._parse_amount(row["amount"]),
             category=row.get("category"),
+            end_date=self._parse_date(row.get("end_date", row["entry_date"])),
+            frequency=row.get("frequency", "once"),
+            day_of_month=row.get("day_of_month"),
+            day_of_week=row.get("day_of_week"),
             created_at=self._parse_datetime(row["created_at"]),
             updated_at=self._parse_datetime(row["updated_at"]),
         )
