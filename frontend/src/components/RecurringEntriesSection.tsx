@@ -34,7 +34,8 @@ import {
   useRetryRecurringEntry,
   useDeleteRecurringEntry,
 } from '../hooks/useRecurringEntries';
-import type { RecurringEntry, RecurringEntryPayload, RecurringFrequency } from '../types/recurring';
+import type { RecurringEntry, RecurringEntryPayload } from '../types/recurring';
+import { RecurringFrequency } from '../types/recurring';
 import { formatAmount, parseCurrency, toISODateString } from '../lib/format';
 import { ConfirmDialog } from './ConfirmDialog';
 import { useToastStore } from '../stores/toastStore';
@@ -66,7 +67,7 @@ const defaultFormState: RecurringEntryFormState = {
   description: '',
   amount: '',
   category: '',
-  frequency: 'monthly',
+  frequency: RecurringFrequency.MONTHLY,
   day_of_month: 1,
   day_of_week: null,
   start_date: toISODateString(new Date()),

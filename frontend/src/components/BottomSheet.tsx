@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useState, forwardRef } from 'react';
+import { type ReactNode, useEffect, useState, forwardRef } from 'react';
 import {
   Dialog,
   DialogContent,
