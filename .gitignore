@@ -67,10 +67,11 @@ Thumbs.db
 # !backend/.env.example
 # !frontend/.env.example
 #
-# # 내부 개발 문서
+# # 내부 개발 문서 (반드시 제외)
 # plan.md
-# docs/stitch_/          # 디자인 프로토타입
-# docs/*-plan.md         # 개발 계획 문서
+# docs/stitch_/              # 디자인 프로토타입
+# docs/*-plan.md             # 개발 계획 문서
+# docs/ui-ux-improvement-plan.md
 #
 # # 개발 도구 설정 (선택적)
 # .vscode/               # VS Code 설정 전체 제외
@@ -100,13 +101,16 @@ Thumbs.db
 #    - .gitignore (릴리즈용으로 수정)
 #    - .husky/pre-commit
 #
-# ✅ 문서 (선택적):
-#    - README.md
+# ✅ 문서:
+#    - README.md (필수)
+#
+#    선택적 (오픈소스라면 유용, 일반 릴리즈는 불필요):
 #    - DEVELOPMENT.md
 #    - CLAUDE.md, AGENTS.md
 #    - docs/database.md
 #    - docs/backend-architecture.md
 #    - docs/supabase.md
+#    - docs/browser-compatibility.md
 #
 # ✅ 환경 변수 예제:
 #    - backend/.env.example
