@@ -673,7 +673,7 @@ class EntryService:
             description=row["description"],
             amount=self._parse_amount(row["amount"]),
             category=row.get("category"),
-            end_date=self._parse_date(row.get("end_date", row["entry_date"])),
+            end_date=self._parse_date(row["end_date"]) if row.get("end_date") is not None else None,
             frequency=row.get("frequency", "once"),
             day_of_month=row.get("day_of_month"),
             day_of_week=row.get("day_of_week"),

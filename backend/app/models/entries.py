@@ -20,10 +20,10 @@ class Entry(BaseModel):
     description: str
     amount: int
     category: str | None
-    end_date: date
-    frequency: Literal["once", "monthly", "weekly"]
-    day_of_month: int | None
-    day_of_week: int | None
+    end_date: date | None = None
+    frequency: Literal["once", "monthly", "weekly"] = "once"
+    day_of_month: int | None = None
+    day_of_week: int | None = None
     created_at: datetime
     updated_at: datetime
 
