@@ -46,6 +46,11 @@ frontend/.env.local
 undefined:/
 lighthouse.*/
 
+# Playwright
+/test-results/
+/playwright-report/
+/playwright/.cache/
+
 # OS files
 .DS_Store
 Thumbs.db
