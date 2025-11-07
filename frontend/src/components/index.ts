@@ -26,5 +26,4 @@ export type { PullToRefreshIndicatorProps } from './PullToRefreshIndicator';
 
 // Feature Components
 export { FilterBar } from './FilterBar';
-export { RecurringEntriesSection } from './RecurringEntriesSection';
 export { BulkUploadWizard } from './BulkUploadWizard';
