@@ -64,14 +64,29 @@ export function formatDate(dateString: string): string {
 
 /**
  * 날짜를 짧은 형식으로 포맷
- * @example formatDateShort("2025-11-03") // "11/03"
+ * @example formatDateShort("2025-11-03") // "11월 3일"
  */
 export function formatDateShort(dateString: string): string {
   const date = new Date(dateString);
   return date.toLocaleDateString('ko-KR', {
-    month: '2-digit',
-    day: '2-digit',
+    month: 'long',
+    day: 'numeric',
   });
+}
+
+/**
+ * 날짜를 요일과 함께 포맷
+ * @example formatDateWithWeekday("2025-11-03") // "11월 3일 (월)"
+ */
+export function formatDateWithWeekday(dateString: string): string {
+  const date = new Date(dateString);
+  const formatted = date.toLocaleDateString('ko-KR', {
+    month: 'long',
+    day: 'numeric',
+    weekday: 'short',
+  });
+  // "11월 3일 월요일" -> "11월 3일 (월)"
+  return formatted.replace(/(\d+일)\s*(.요일)/, '$1 ($2)').replace('요일', '');
 }
 
 /**

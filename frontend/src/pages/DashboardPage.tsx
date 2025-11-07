@@ -26,7 +26,7 @@ import { useEntries } from '../hooks/useEntries';
 import { APIError } from '../lib/api';
 import { ContentSkeleton } from '../components/ContentSkeleton';
 import { EmptyState } from '../components/EmptyState';
-import { formatAmount } from '../lib/format';
+import { formatAmount, formatDate, formatDateShort } from '../lib/format';
 import { containerVariants, itemVariants } from '../utils/animations';
 
 export const DashboardPage = () => {
@@ -317,10 +317,7 @@ export const DashboardPage = () => {
                                 )}
                               </Stack>
                               <Typography variant="caption" color="text.secondary">
-                                {new Date(entry.entry_date).toLocaleDateString('ko-KR', {
-                                  month: 'long',
-                                  day: 'numeric',
-                                })}
+                                {formatDateShort(entry.entry_date)}
                               </Typography>
                             </Stack>
                             <Typography
@@ -380,7 +377,7 @@ export const DashboardPage = () => {
                             {book.name}
                           </Typography>
                           <Typography variant="caption" color="text.secondary">
-                            {new Date(book.created_at).toLocaleDateString('ko-KR')}
+                            {formatDate(book.created_at)} 생성
                           </Typography>
                         </CardContent>
                       </CardActionArea>
