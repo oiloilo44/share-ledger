@@ -1,3 +1,9 @@
+# =============================================================================
+# 개발 단계 .gitignore 설정
+# =============================================================================
+# 현재는 개발 단계이므로 .env, plan.md, docs 등을 포함합니다.
+# 릴리즈 시 새 저장소를 만들 때는 아래 "릴리즈용 설정" 섹션을 참고하세요.
+
 # Virtual environments
 .venv*
 
@@ -42,3 +48,71 @@ lighthouse.*/
 # OS files
 .DS_Store
 Thumbs.db
+
+
+# =============================================================================
+# 릴리즈용 .gitignore 설정 (새 저장소 생성 시 사용)
+# =============================================================================
+# 아래 항목들을 추가로 제외하여 프로덕션 저장소를 깔끔하게 유지하세요:
+#
+# # 환경 변수 파일 (보안)
+# .env
+# .env.*
+# backend/.env
+# backend/.env.*
+# frontend/.env
+# frontend/.env.*
+# !.env.example
+# !backend/.env.example
+# !frontend/.env.example
+#
+# # 내부 개발 문서
+# plan.md
+# docs/stitch_/          # 디자인 프로토타입
+# docs/*-plan.md         # 개발 계획 문서
+#
+# # 개발 도구 설정 (선택적)
+# .vscode/               # VS Code 설정 전체 제외
+# .idea/                 # IntelliJ 설정 전체 제외
+#
+# # 테스트 커버리지 및 리포트
+# coverage/
+# .nyc_output/
+# test-results/
+#
+# =============================================================================
+# 릴리즈 시 포함해야 할 필수 파일 (참고용)
+# =============================================================================
+# ✅ 소스 코드:
+#    - backend/app/
+#    - frontend/src/
+#    - infra/migrations/
+#
+# ✅ 설정 파일:
+#    - backend/pyproject.toml, uv.lock
+#    - frontend/package.json, pnpm-lock.yaml
+#    - .python-version, .nvmrc
+#    - .pre-commit-config.yaml
+#    - .prettierrc, ruff.toml
+#
+# ✅ Git 설정:
+#    - .gitignore (릴리즈용으로 수정)
+#    - .husky/pre-commit
+#
+# ✅ 문서 (선택적):
+#    - README.md
+#    - DEVELOPMENT.md
+#    - CLAUDE.md, AGENTS.md
+#    - docs/database.md
+#    - docs/backend-architecture.md
+#    - docs/supabase.md
+#
+# ✅ 환경 변수 예제:
+#    - backend/.env.example
+#    - frontend/.env.example
+#
+# ❌ 제외해야 할 것:
+#    - .env (실제 키 포함)
+#    - plan.md (내부 계획)
+#    - docs/stitch_/ (디자인 프로토타입)
+#    - docs/*-plan.md (개발 계획)
