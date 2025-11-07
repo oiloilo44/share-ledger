@@ -13,7 +13,7 @@ export interface Entry {
   description: string;
   amount: number; // 단위: 원
   category: string | null;
-  end_date: string; // ISO date format (YYYY-MM-DD) - 반복 종료일
+  end_date: string | null; // ISO date format (YYYY-MM-DD) - 반복 종료일
   frequency: EntryFrequency; // 반복 주기
   day_of_month: number | null; // 월간 반복 날짜 (1-31)
   day_of_week: number | null; // 주간 반복 요일 (0=일요일, 6=토요일)

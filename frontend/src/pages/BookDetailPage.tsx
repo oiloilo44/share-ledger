@@ -25,6 +25,7 @@ import {
   ListItem,
   ListItemText,
   MenuItem,
+  Popover,
   Stack,
   TextField,
   ToggleButton,
@@ -34,9 +35,12 @@ import {
 import { motion } from 'framer-motion';
 import { useSwipeable } from 'react-swipeable';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { DateCalendar } from '@mui/x-date-pickers/DateCalendar';
 import {
   Add as AddIcon,
   ArrowBack as ArrowBackIcon,
+  ChevronLeft as ChevronLeftIcon,
+  ChevronRight as ChevronRightIcon,
   Delete as DeleteIcon,
   Download as DownloadIcon,
   Edit as EditIcon,
@@ -51,7 +55,7 @@ import { useMembers } from '../hooks/useMembers';
 import type { Entry, EntryCreate } from '../types/entries';
 import { EntryTypeFilter } from '../types/entries';
 import { APIError, type EntryListParams } from '../lib/api';
-import { formatAmount, toISODateString } from '../lib/format';
+import { formatAmount, formatDateWithWeekday, toISODateString } from '../lib/format';
 import { exportEntriesAsCSV, exportEntriesAsXLSX } from '../lib/export';
 import { enqueueOfflineEntry } from '../lib/offlineQueue';
 import { useRealtimeBookSync } from '../hooks/useRealtimeSync';
@@ -64,13 +68,10 @@ import { BottomSheet } from '../components/BottomSheet';
 import { AmountInput } from '../components/AmountInput';
 import { FilterBar } from '../components/FilterBar';
 import { containerVariants, itemVariants } from '../utils/animations';
+import { expandEntriesForMonth } from '../utils/expandRecurringEntry';
+import type { ExpandedEntry } from '../types/entries';
 
 // Lazy load heavy components
-const RecurringEntriesSection = lazy(() =>
-  import('../components/RecurringEntriesSection').then((m) => ({
-    default: m.RecurringEntriesSection,
-  })),
-);
 const BulkUploadWizard = lazy(() =>
   import('../components/BulkUploadWizard').then((m) => ({ default: m.BulkUploadWizard })),
 );
@@ -88,6 +89,10 @@ interface EntryFormData {
   amount: number;
   amountType: 'income' | 'expense';
   category: string;
+  frequency: 'once' | 'monthly' | 'weekly';
+  end_date: string | null;
+  day_of_month: number | null;
+  day_of_week: number | null;
 }
 
 interface FilterState {
@@ -152,7 +157,7 @@ const filtersToEntryParams = (filters: FilterState): EntryListParams => ({
   memberIds: filters.memberIds.length ? filters.memberIds : undefined,
   minAmount: filters.minAmount ?? undefined,
   maxAmount: filters.maxAmount ?? undefined,
-  type: filters.type ?? undefined,
+  // type 필터는 클라이언트 사이드에서만 처리 (서버 요청 X)
   search: filters.search || undefined,
 });
 
@@ -299,6 +304,65 @@ export const BookDetailPage = () => {
   const searchSignature = searchParams.toString();
   const filtersSignature = serializeFilters(appliedFilters);
 
+  // 선택된 월 (YYYY-MM 형식)
+  const [selectedMonth, setSelectedMonth] = useState(() => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  });
+
+  // 월 이동 핸들러
+  const handlePreviousMonth = () => {
+    const [year, month] = selectedMonth.split('-').map(Number);
+    const prevMonth = month === 1 ? 12 : month - 1;
+    const prevYear = month === 1 ? year - 1 : year;
+    setSelectedMonth(`${prevYear}-${String(prevMonth).padStart(2, '0')}`);
+  };
+
+  const handleNextMonth = () => {
+    const [year, month] = selectedMonth.split('-').map(Number);
+    const nextMonth = month === 12 ? 1 : month + 1;
+    const nextYear = month === 12 ? year + 1 : year;
+    setSelectedMonth(`${nextYear}-${String(nextMonth).padStart(2, '0')}`);
+  };
+
+  const handleToday = () => {
+    const now = new Date();
+    setSelectedMonth(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`);
+    handleCloseMonthPicker();
+  };
+
+  const handleOpenMonthPicker = (event: React.MouseEvent<HTMLElement>) => {
+    setMonthPickerAnchor(event.currentTarget);
+    setMonthPickerView('month');
+  };
+
+  const handleCloseMonthPicker = () => {
+    setMonthPickerAnchor(null);
+    setMonthPickerView('month');
+  };
+
+  const handleMonthSelect = (date: Date | null) => {
+    // 월 선택 view일 때만 상태 업데이트 및 창 닫기
+    if (date && monthPickerView === 'month') {
+      const year = date.getFullYear();
+      const month = date.getMonth() + 1;
+      setSelectedMonth(`${year}-${String(month).padStart(2, '0')}`);
+      handleCloseMonthPicker();
+    }
+  };
+
+  // 선택된 월 포맷팅
+  const selectedMonthLabel = useMemo(() => {
+    const [year, month] = selectedMonth.split('-').map(Number);
+    return `${year}년 ${month}월`;
+  }, [selectedMonth]);
+
+  // 현재 월 포맷팅
+  const currentMonthLabel = useMemo(() => {
+    const now = new Date();
+    return `${now.getFullYear()}년 ${now.getMonth() + 1}월`;
+  }, []);
+
   useEffect(() => {
     const next = parseFiltersFromParams(new URLSearchParams(searchSignature));
     if (serializeFilters(next) !== filtersSignature) {
@@ -334,30 +398,52 @@ export const BookDetailPage = () => {
     [memberOptions],
   );
 
+  // entries를 전개 (반복 내역 계산)
+  const expandedEntries = useMemo(() => {
+    if (!entries.length) return [];
+    // expandEntriesForMonth를 사용하여 선택된 월의 반복 내역 전개
+    return expandEntriesForMonth(entries, selectedMonth);
+  }, [entries, selectedMonth]);
+
+  // 타입 필터 적용 (전체/수입/지출)
+  const filteredEntries = useMemo(() => {
+    if (!appliedFilters.type) return expandedEntries;
+
+    return expandedEntries.filter((entry) => {
+      if (appliedFilters.type === EntryTypeFilter.INCOME) {
+        return entry.amount > 0;
+      } else if (appliedFilters.type === EntryTypeFilter.EXPENSE) {
+        return entry.amount < 0;
+      }
+      return true;
+    });
+  }, [expandedEntries, appliedFilters.type]);
+
   const existingCategories = useMemo(() => {
-    const categories = entries
+    const categories = filteredEntries
       .map((entry) => entry.category)
       .filter((category): category is string => Boolean(category));
     return Array.from(new Set(categories)).sort();
-  }, [entries]);
+  }, [filteredEntries]);
 
   const groupedEntries = useMemo(() => {
-    if (!entries.length) return [] as Array<{ date: string; entries: Entry[]; total: number }>;
-    const sorted = [...entries].sort(
-      (a, b) => new Date(b.entry_date).getTime() - new Date(a.entry_date).getTime(),
+    if (!filteredEntries.length)
+      return [] as Array<{ date: string; entries: ExpandedEntry[]; total: number }>;
+    const sorted = [...filteredEntries].sort(
+      (a, b) => new Date(b.occurrence_date).getTime() - new Date(a.occurrence_date).getTime(),
     );
 
-    const groups: Array<{ date: string; entries: Entry[]; total: number }> = [];
+    const groups: Array<{ date: string; entries: ExpandedEntry[]; total: number }> = [];
     let currentDate = '';
-    let currentGroup: Entry[] = [];
+    let currentGroup: ExpandedEntry[] = [];
     let currentTotal = 0;
 
     for (const entry of sorted) {
-      if (entry.entry_date !== currentDate) {
+      if (entry.occurrence_date !== currentDate) {
         if (currentGroup.length) {
           groups.push({ date: currentDate, entries: currentGroup, total: currentTotal });
         }
-        currentDate = entry.entry_date;
+        currentDate = entry.occurrence_date;
         currentGroup = [entry];
         currentTotal = entry.amount;
       } else {
@@ -371,7 +457,7 @@ export const BookDetailPage = () => {
     }
 
     return groups;
-  }, [entries]);
+  }, [filteredEntries]);
 
   const hasEntries = entries.length > 0;
   const hasFiltersApplied = serializeFilters(appliedFilters) !== serializeFilters(defaultFilters);
@@ -387,11 +473,17 @@ export const BookDetailPage = () => {
     amount: 0,
     amountType: 'expense',
     category: '',
+    frequency: 'once',
+    end_date: null,
+    day_of_month: null,
+    day_of_week: null,
   });
   const [confirmDeleteTarget, setConfirmDeleteTarget] = useState<Entry | null>(null);
-  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isFilterDrawerOpen, setFilterDrawerOpen] = useState(false);
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
+  const [monthPickerAnchor, setMonthPickerAnchor] = useState<HTMLElement | null>(null);
+  const [monthPickerView, setMonthPickerView] = useState<'year' | 'month'>('month');
 
   const handleOpenDialog = (mode: EntryDialogMode, entry?: Entry) => {
     setDialogState({ mode, entry });
@@ -404,6 +496,10 @@ export const BookDetailPage = () => {
         amount: absAmount,
         amountType,
         category: entry.category ?? '',
+        frequency: entry.frequency,
+        end_date: entry.end_date,
+        day_of_month: entry.day_of_month,
+        day_of_week: entry.day_of_week,
       });
     } else {
       setFormData({
@@ -412,6 +508,10 @@ export const BookDetailPage = () => {
         amount: 0,
         amountType: 'expense',
         category: '',
+        frequency: 'once',
+        end_date: null,
+        day_of_month: null,
+        day_of_week: null,
       });
     }
   };
@@ -425,8 +525,8 @@ export const BookDetailPage = () => {
   };
 
   const handleSubmit = async () => {
-    if (!formData.description.trim() || formData.amount === 0) {
-      showToast('설명과 금액을 올바르게 입력해주세요.', {
+    if (!formData.entry_date || !formData.description.trim() || formData.amount === 0) {
+      showToast('날짜, 설명, 금액을 올바르게 입력해주세요.', {
         severity: 'warning',
         title: '입력 확인',
       });
@@ -440,28 +540,40 @@ export const BookDetailPage = () => {
       description: formData.description.trim(),
       amount: signedAmount,
       category: formData.category.trim() ? formData.category.trim() : null,
+      frequency: formData.frequency,
+      end_date: formData.end_date,
+      day_of_month: formData.day_of_month,
+      day_of_week: formData.day_of_week,
     };
 
-    try {
-      if (dialogState.mode === 'create') {
-        await createEntry.mutateAsync(payload);
-        showToast('내역을 추가했습니다.', { severity: 'success', title: '저장 완료' });
-      } else if (dialogState.mode === 'edit' && dialogState.entry) {
-        await updateEntry.mutateAsync({ entryId: dialogState.entry.id, data: payload });
-        showToast('내역을 수정했습니다.', { severity: 'success', title: '수정 완료' });
-      }
+    // 오프라인 체크
+    if (!navigator.onLine) {
+      const queued = enqueueOfflineEntry({ ...payload, bookId: bookId!, timestamp: Date.now() });
+      useOfflineStore.getState().setPendingEntries(queued);
+      showToast('오프라인 상태입니다. 연결 시 자동 업로드됩니다.', {
+        severity: 'info',
+        title: '대기열 저장',
+      });
       handleCloseDialog();
-    } catch (err) {
-      if (!navigator.onLine) {
-        const queued = enqueueOfflineEntry({ ...payload, bookId: bookId!, timestamp: Date.now() });
-        useOfflineStore.getState().setPendingEntries(queued);
-        showToast('오프라인 상태입니다. 연결 시 자동 업로드됩니다.', {
-          severity: 'info',
-          title: '대기열 저장',
-        });
-        handleCloseDialog();
-        return;
+      return;
+    }
+
+    // 낙관적 업데이트: 다이얼로그를 즉시 닫고 토스트 표시
+    const isCreate = dialogState.mode === 'create';
+    const successMessage = isCreate ? '내역을 추가했습니다.' : '내역을 수정했습니다.';
+    const successTitle = isCreate ? '저장 완료' : '수정 완료';
+
+    handleCloseDialog();
+    showToast(successMessage, { severity: 'success', title: successTitle });
+
+    // 백그라운드에서 서버 요청 처리
+    try {
+      if (isCreate) {
+        await createEntry.mutateAsync(payload);
+      } else if (dialogState.entry) {
+        await updateEntry.mutateAsync({ entryId: dialogState.entry.id, data: payload });
       }
+    } catch (err) {
       console.error('내역 저장 실패:', err);
       const message =
         err instanceof APIError ? err.message : '내역을 저장하지 못했습니다. 다시 시도해주세요.';
@@ -471,25 +583,34 @@ export const BookDetailPage = () => {
 
   const handleDelete = (entry: Entry) => {
     setConfirmDeleteTarget(entry);
+    setIsDeleteDialogOpen(true);
   };
 
   const handleConfirmDelete = async () => {
     if (!confirmDeleteTarget) return;
+
+    const targetEntry = confirmDeleteTarget;
+
+    // 낙관적 업데이트: 다이얼로그를 즉시 닫고 토스트 표시
+    setIsDeleteDialogOpen(false);
+    showToast('내역을 삭제했습니다.', { severity: 'success', title: '삭제 완료' });
+
+    // 백그라운드에서 서버 요청 처리
     try {
-      setIsConfirmingDelete(true);
-      await deleteEntry.mutateAsync(confirmDeleteTarget.id);
-      showToast('내역을 삭제했습니다.', { severity: 'success', title: '삭제 완료' });
-      setConfirmDeleteTarget(null);
+      await deleteEntry.mutateAsync(targetEntry.id);
     } catch (err) {
       console.error('삭제 실패:', err);
       const message =
         err instanceof APIError
           ? err.message
-          : `"${confirmDeleteTarget.description}" 내역을 삭제하지 못했습니다.`;
+          : `"${targetEntry.description}" 내역을 삭제하지 못했습니다.`;
       showToast(message, { severity: 'error', title: '삭제 실패' });
-    } finally {
-      setIsConfirmingDelete(false);
     }
+  };
+
+  const handleDeleteDialogExited = () => {
+    // 다이얼로그 애니메이션 완료 후 상태 초기화
+    setConfirmDeleteTarget(null);
   };
 
   const handleResetFilters = () => {
@@ -615,8 +736,27 @@ export const BookDetailPage = () => {
         </Stack>
       </Box>
 
-      {/* 빠른 필터 (전체/수입/지출) */}
-      <Box mb={3}>
+      {/* 월 선택 + 빠른 필터 */}
+      <Box mb={3} display="flex" alignItems="center" gap={2}>
+        {/* 월 선택 */}
+        <Box display="flex" alignItems="center" gap={0.5}>
+          <IconButton onClick={handlePreviousMonth} size="small">
+            <ChevronLeftIcon />
+          </IconButton>
+          <Button
+            variant="outlined"
+            size="small"
+            onClick={handleOpenMonthPicker}
+            sx={{ minWidth: '110px' }}
+          >
+            {selectedMonthLabel}
+          </Button>
+          <IconButton onClick={handleNextMonth} size="small">
+            <ChevronRightIcon />
+          </IconButton>
+        </Box>
+
+        {/* 빠른 필터 (전체/수입/지출) */}
         <FilterBar
           options={[
             { value: 'all', label: '전체' },
@@ -625,7 +765,10 @@ export const BookDetailPage = () => {
           ]}
           value={appliedFilters.type ? [appliedFilters.type] : ['all']}
           onChange={(values) => {
-            const typeValue = values.includes('all') ? null : (values[0] as EntryTypeFilter | null);
+            // 단일 선택 모드: 새로 추가된 값만 사용
+            const prevValue = appliedFilters.type ? [appliedFilters.type] : ['all'];
+            const newValue = values.find((v) => !prevValue.includes(v)) || values[0] || 'all';
+            const typeValue = newValue === 'all' ? null : (newValue as EntryTypeFilter);
             const newFilters = { ...appliedFilters, type: typeValue };
             setAppliedFilters(newFilters);
             setDraftFilters(newFilters);
@@ -673,7 +816,7 @@ export const BookDetailPage = () => {
                   mb={2}
                 >
                   <Typography variant="h6" fontWeight={700}>
-                    {group.date}
+                    {formatDateWithWeekday(group.date)}
                   </Typography>
                   <Chip
                     label={formatAmount(group.total)}
@@ -709,12 +852,6 @@ export const BookDetailPage = () => {
         />
       )}
 
-      <Box mt={4}>
-        <Suspense fallback={<ContentSkeleton variant="list" items={3} />}>
-          <RecurringEntriesSection bookId={bookId} />
-        </Suspense>
-      </Box>
-
       <BottomSheet
         open={dialogState.mode !== null}
         onClose={handleCloseDialog}
@@ -730,15 +867,22 @@ export const BookDetailPage = () => {
           />
 
           {/* 날짜 */}
-          <TextField
+          <DatePicker
             label="날짜"
-            type="date"
-            value={formData.entry_date}
-            onChange={(event) =>
-              setFormData((prev) => ({ ...prev, entry_date: event.target.value }))
-            }
-            InputLabelProps={{ shrink: true }}
-            fullWidth
+            value={formData.entry_date ? new Date(formData.entry_date) : null}
+            onChange={(date) => {
+              setFormData((prev) => ({
+                ...prev,
+                entry_date: date ? toISODateString(date) : '',
+              }));
+            }}
+            slotProps={{
+              textField: {
+                fullWidth: true,
+                required: true,
+              },
+              field: { clearable: true },
+            }}
           />
 
           {/* 설명 */}
@@ -752,6 +896,7 @@ export const BookDetailPage = () => {
             helperText={`${formData.description.length}/200`}
             placeholder="예: 점심 식사"
             fullWidth
+            required
           />
 
           {/* 카테고리 */}
@@ -775,6 +920,96 @@ export const BookDetailPage = () => {
             )}
           />
 
+          {/* 반복 설정 */}
+          <TextField
+            select
+            label="반복 주기"
+            value={formData.frequency}
+            onChange={(event) => {
+              const newFrequency = event.target.value as 'once' | 'monthly' | 'weekly';
+              setFormData((prev) => ({
+                ...prev,
+                frequency: newFrequency,
+                // frequency 변경 시 관련 필드 초기화
+                end_date: newFrequency === 'once' ? null : prev.end_date,
+                day_of_month: newFrequency === 'monthly' ? 1 : null,
+                day_of_week: newFrequency === 'weekly' ? 0 : null,
+              }));
+            }}
+            fullWidth
+          >
+            <MenuItem value="once">단건</MenuItem>
+            <MenuItem value="monthly">월 반복</MenuItem>
+            <MenuItem value="weekly">주 반복</MenuItem>
+          </TextField>
+
+          {/* 종료일 (반복일 경우만 표시) */}
+          {formData.frequency !== 'once' && (
+            <DatePicker
+              label="종료일 (선택)"
+              value={formData.end_date ? new Date(formData.end_date) : null}
+              onChange={(date) => {
+                setFormData((prev) => ({
+                  ...prev,
+                  end_date: date ? toISODateString(date) : null,
+                }));
+              }}
+              slotProps={{
+                textField: {
+                  fullWidth: true,
+                  helperText: '설정하지 않으면 무기한 반복됩니다.',
+                },
+                field: { clearable: true },
+              }}
+            />
+          )}
+
+          {/* 반복 날짜 (월 반복일 경우만 표시) */}
+          {formData.frequency === 'monthly' && (
+            <TextField
+              select
+              label="반복 날짜"
+              value={formData.day_of_month ?? 1}
+              onChange={(event) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  day_of_month: Number(event.target.value),
+                }))
+              }
+              fullWidth
+            >
+              {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
+                <MenuItem key={day} value={day}>
+                  매달 {day}일
+                </MenuItem>
+              ))}
+            </TextField>
+          )}
+
+          {/* 반복 요일 (주 반복일 경우만 표시) */}
+          {formData.frequency === 'weekly' && (
+            <TextField
+              select
+              label="반복 요일"
+              value={formData.day_of_week ?? 0}
+              onChange={(event) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  day_of_week: Number(event.target.value),
+                }))
+              }
+              fullWidth
+            >
+              <MenuItem value={0}>일요일</MenuItem>
+              <MenuItem value={1}>월요일</MenuItem>
+              <MenuItem value={2}>화요일</MenuItem>
+              <MenuItem value={3}>수요일</MenuItem>
+              <MenuItem value={4}>목요일</MenuItem>
+              <MenuItem value={5}>금요일</MenuItem>
+              <MenuItem value={6}>토요일</MenuItem>
+            </TextField>
+          )}
+
           {/* 액션 버튼 */}
           <Stack direction="row" spacing={2} sx={{ pt: 2 }}>
             <Button onClick={handleCloseDialog} size="large" fullWidth variant="outlined">
@@ -786,6 +1021,7 @@ export const BookDetailPage = () => {
               size="large"
               fullWidth
               disabled={
+                !formData.entry_date ||
                 !formData.description.trim() ||
                 formData.amount === 0 ||
                 createEntry.isPending ||
@@ -799,7 +1035,7 @@ export const BookDetailPage = () => {
       </BottomSheet>
 
       <ConfirmDialog
-        open={confirmDeleteTarget !== null}
+        open={isDeleteDialogOpen}
         title="내역 삭제"
         description={
           confirmDeleteTarget
@@ -807,10 +1043,10 @@ export const BookDetailPage = () => {
             : undefined
         }
         onConfirm={handleConfirmDelete}
-        onCancel={() => setConfirmDeleteTarget(null)}
+        onCancel={() => setIsDeleteDialogOpen(false)}
+        onExited={handleDeleteDialogExited}
         confirmText="삭제"
         variant="danger"
-        loading={isConfirmingDelete}
       />
 
       <Drawer anchor="right" open={isFilterDrawerOpen} onClose={() => setFilterDrawerOpen(false)}>
@@ -826,6 +1062,9 @@ export const BookDetailPage = () => {
                   fromDate: value ? toISODateString(value) : null,
                 }))
               }
+              slotProps={{
+                field: { clearable: true },
+              }}
             />
             <DatePicker
               label="종료일"
@@ -836,6 +1075,9 @@ export const BookDetailPage = () => {
                   toDate: value ? toISODateString(value) : null,
                 }))
               }
+              slotProps={{
+                field: { clearable: true },
+              }}
             />
             <TextField
               label="검색어"
@@ -950,6 +1192,56 @@ export const BookDetailPage = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Popover
+        open={Boolean(monthPickerAnchor)}
+        anchorEl={monthPickerAnchor}
+        onClose={handleCloseMonthPicker}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'center',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'center',
+        }}
+      >
+        <Stack spacing={3} sx={{ p: 2, pb: 1 }}>
+          <DateCalendar
+            views={['year', 'month']}
+            openTo="month"
+            value={
+              selectedMonth
+                ? new Date(
+                    parseInt(selectedMonth.split('-')[0]),
+                    parseInt(selectedMonth.split('-')[1]) - 1,
+                  )
+                : null
+            }
+            onChange={handleMonthSelect}
+            onViewChange={(newView) => {
+              if (newView === 'year' || newView === 'month') {
+                setMonthPickerView(newView);
+              }
+            }}
+            slotProps={{
+              calendarHeader: {
+                format: 'yyyy년',
+              } as unknown as Record<string, unknown>,
+            }}
+            sx={{
+              minHeight: 320,
+              maxHeight: 320,
+              '& .MuiPickersSlideTransition-root': {
+                minHeight: 240,
+              },
+            }}
+          />
+          <Button variant="outlined" onClick={handleToday} fullWidth>
+            {currentMonthLabel}
+          </Button>
+        </Stack>
+      </Popover>
     </Box>
   );
 };

@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { useRef } from 'react';
 import {
   alpha,
   Button,
@@ -27,6 +28,7 @@ export interface ConfirmDialogProps {
   loading?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
+  onExited?: () => void;
 }
 
 export const ConfirmDialog = ({
@@ -39,42 +41,58 @@ export const ConfirmDialog = ({
   loading = false,
   onConfirm,
   onCancel,
-}: ConfirmDialogProps) => (
-  <Dialog
-    open={open}
-    onClose={loading ? undefined : onCancel}
-    aria-labelledby="confirm-dialog-title"
-    aria-describedby="confirm-dialog-description"
-  >
-    <DialogHeader variant={variant} title={title} />
-    {description && (
-      <DialogContent dividers>
-        <Typography
-          id="confirm-dialog-description"
-          variant="body2"
-          color="text.secondary"
-          sx={{ whiteSpace: 'pre-line' }}
+  onExited,
+}: ConfirmDialogProps) => {
+  const confirmButtonRef = useRef<HTMLButtonElement>(null);
+
+  // 다이얼로그 트랜지션 완료 후 확인 버튼에 포커스
+  const handleEntered = () => {
+    if (confirmButtonRef.current) {
+      confirmButtonRef.current.focus();
+    }
+  };
+
+  return (
+    <Dialog
+      open={open}
+      onClose={loading ? undefined : onCancel}
+      aria-labelledby="confirm-dialog-title"
+      aria-describedby="confirm-dialog-description"
+      TransitionProps={{
+        onEntered: handleEntered,
+        onExited: onExited,
+      }}
+    >
+      <DialogHeader variant={variant} title={title} />
+      {description && (
+        <DialogContent dividers>
+          <Typography
+            id="confirm-dialog-description"
+            variant="body2"
+            color="text.secondary"
+            sx={{ whiteSpace: 'pre-line' }}
+          >
+            {description}
+          </Typography>
+        </DialogContent>
+      )}
+      <DialogActions sx={{ px: 3, py: 2.5, gap: 1 }}>
+        <Button onClick={onCancel} disabled={loading} variant="outlined">
+          {cancelText}
+        </Button>
+        <Button
+          ref={confirmButtonRef}
+          onClick={onConfirm}
+          color={variant === 'danger' ? 'error' : variant === 'success' ? 'success' : 'primary'}
+          variant="contained"
+          disabled={loading}
         >
-          {description}
-        </Typography>
-      </DialogContent>
-    )}
-    <DialogActions sx={{ px: 3, py: 2.5, gap: 1 }}>
-      <Button onClick={onCancel} disabled={loading} variant="outlined">
-        {cancelText}
-      </Button>
-      <Button
-        onClick={onConfirm}
-        color={variant === 'danger' ? 'error' : variant === 'success' ? 'success' : 'primary'}
-        variant="contained"
-        autoFocus
-        disabled={loading}
-      >
-        {confirmText}
-      </Button>
-    </DialogActions>
-  </Dialog>
-);
+          {confirmText}
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
 
 const getVariantIcon = (variant: ConfirmDialogVariant) => {
   switch (variant) {
