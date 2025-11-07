@@ -4,8 +4,38 @@ import { defineConfig } from 'vitest/config';
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
+  // Vite 캐시 디렉토리
+  cacheDir: 'node_modules/.vite',
+  // 의존성 최적화 (테스트 성능 개선)
+  optimizeDeps: {
+    include: [
+      'react',
+      'react-dom',
+      'react-dom/client',
+      'react/jsx-runtime',
+      'react-router-dom',
+      '@mui/material',
+      '@mui/material/styles',
+      '@mui/material/Button',
+      '@mui/material/TextField',
+      '@mui/icons-material',
+      '@emotion/react',
+      '@emotion/styled',
+      '@emotion/cache',
+      '@testing-library/react',
+      '@testing-library/user-event',
+      '@testing-library/jest-dom',
+      'zustand',
+      '@tanstack/react-query',
+      'date-fns',
+    ],
+    exclude: ['@storybook/**', '@chromatic-com/**'],
+  },
   server: {
     port: 5173,
+    fs: {
+      strict: false,
+    },
   },
   preview: {
     port: 4173,
@@ -72,6 +102,26 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: './src/setupTests.ts',
     css: true,
+    // 테스트 파일 패턴 명시적 지정
+    include: ['src/**/*.test.{ts,tsx}'],
+    // 불필요한 파일 제외 (성능 최적화)
+    exclude: [
+      'node_modules/**',
+      'dist/**',
+      '.storybook/**',
+      'src/**/*.stories.{ts,tsx}',
+      'src/stories/**/*.{ts,tsx}',
+    ],
+    // 테스트 격리 유지 (안정성)
+    isolate: true,
+    // 스레드 풀 최적화
+    pool: 'threads',
+    poolOptions: {
+      threads: {
+        maxThreads: 2,
+        minThreads: 1,
+      },
+    },
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html', 'json'],
@@ -83,6 +133,14 @@ export default defineConfig({
         'src/stories/**',
         '.storybook/**',
       ],
+    },
+    // 의존성 최적화
+    deps: {
+      optimizer: {
+        web: {
+          exclude: ['@storybook/**', '@chromatic-com/**'],
+        },
+      },
     },
   },
 });
