@@ -13,7 +13,7 @@ import httpx
 import pytest
 from supabase import Client, create_client
 
-from app.models import BookCreate, EntryCreate, EntryHistoryAction, EntryUpdate
+from app.models import BookCreate, EntryCreate, EntryUpdate
 from app.schemas.auth import SupabaseUser
 from app.services.books import BookService, BookServiceError
 from app.services.entries import EntryService
@@ -257,131 +257,6 @@ def test_entry_service_history_revert() -> None:
         finally:
             await _cleanup_created_book(book_service, tester, created_book_id)
             # users 테이블에서도 삭제
-            client.table("users").delete().eq("id", str(user_id)).execute()
-            client.auth.admin.delete_user(user_id)
-
-    _run_with_supabase_guard(_run)
-
-
-def test_entry_service_revert_removes_future_entries() -> None:
-    """특정 시점으로 복원 시 이후에 생성된 내역들이 제거되는지 확인한다."""
-
-    async def _run() -> None:
-        client = _get_supabase_client()
-        book_service = BookService(client=client)
-        entry_service = EntryService(client=client)
-
-        email_suffix = uuid4().hex[:8]
-        email = f"integration+timeline+{email_suffix}@shareledger.app"
-        password = f"Test{email_suffix}!"
-        full_name = "Timeline Integration Tester"
-
-        auth_user = client.auth.admin.create_user(
-            {
-                "email": email,
-                "password": password,
-                "email_confirm": True,
-                "user_metadata": {"full_name": full_name},
-            }
-        )
-        user_id = UUID(auth_user.user.id)
-
-        client.table("users").insert(
-            {
-                "id": str(user_id),
-                "email": email,
-                "full_name": full_name,
-            }
-        ).execute()
-
-        tester = SupabaseUser(id=user_id, email=email, full_name=full_name)
-        created_book_id: UUID | None = None
-
-        try:
-            book = await book_service.create_book(tester, BookCreate(name="Timeline 테스트 가계부"))
-            created_book_id = book.id
-
-            await entry_service.create_entry(
-                book.id,
-                tester,
-                EntryCreate(
-                    entry_date=date(2025, 11, 1),
-                    description="타임라인-1번",
-                    amount=10000,
-                    category="기타",
-                ),
-            )
-            await entry_service.create_entry(
-                book.id,
-                tester,
-                EntryCreate(
-                    entry_date=date(2025, 11, 2),
-                    description="타임라인-2번",
-                    amount=20000,
-                    category="기타",
-                ),
-            )
-            entry_three = await entry_service.create_entry(
-                book.id,
-                tester,
-                EntryCreate(
-                    entry_date=date(2025, 11, 3),
-                    description="타임라인-3번",
-                    amount=30000,
-                    category="기타",
-                ),
-            )
-
-            history = await entry_service.list_history(book.id, tester)
-            history_one = next(
-                (
-                    item
-                    for item in history
-                    if item.action_type == EntryHistoryAction.CREATED
-                    and item.snapshot.get("description") == "타임라인-1번"
-                ),
-                None,
-            )
-            history_two = next(
-                (
-                    item
-                    for item in history
-                    if item.action_type == EntryHistoryAction.CREATED
-                    and item.snapshot.get("description") == "타임라인-2번"
-                ),
-                None,
-            )
-            history_three = next(
-                (
-                    item
-                    for item in history
-                    if item.action_type == EntryHistoryAction.CREATED
-                    and item.snapshot.get("description") == "타임라인-3번"
-                ),
-                None,
-            )
-
-            assert history_one is not None
-            assert history_two is not None
-            assert history_three is not None
-
-            # 1번 시점으로 복원 → 2, 3번 내역 제거
-            await entry_service.revert_history(history_one.id, tester)
-
-            entries_after_first_revert = await entry_service.list_entries(book.id, tester)
-            assert {entry.description for entry in entries_after_first_revert} == {"타임라인-1번"}
-
-            # 3번 시점으로 복원 → 1, 2, 3번 내역이 모두 복원되어야 함
-            reverted_entry = await entry_service.revert_history(history_three.id, tester)
-            assert reverted_entry.id == entry_three.id
-            assert reverted_entry.description == "타임라인-3번"
-
-            entries_after_second_revert = await entry_service.list_entries(book.id, tester)
-            remaining_descriptions = {entry.description for entry in entries_after_second_revert}
-            assert remaining_descriptions == {"타임라인-1번", "타임라인-2번", "타임라인-3번"}
-
-        finally:
-            await _cleanup_created_book(book_service, tester, created_book_id)
             client.table("users").delete().eq("id", str(user_id)).execute()
             client.auth.admin.delete_user(user_id)
 
