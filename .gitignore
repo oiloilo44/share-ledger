@@ -4,7 +4,6 @@
 # Python
 __pycache__
 *.py[cod]
-uv.lock
 .coverage
 htmlcov/
 *.coverage
@@ -18,16 +17,10 @@ node_modules/
 /.parcel-cache/
 
 # Environment files
-.env
 .env.local
 .env.*.local
-backend/.env
 backend/.env.local
-frontend/.env
 frontend/.env.local
-!.env.example
-!backend/.env.example
-!frontend/.env.example
 
 # Project metadata
 plan.md

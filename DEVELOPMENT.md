@@ -28,6 +28,25 @@ ShareLedger는 친구, 가족과 함께 쓰는 공유 가계부 웹 애플리케
 
 ## 개발 환경 설정
 
+### 필수 요구사항
+
+- **Python**: 3.12+ (`.python-version` 파일 참조)
+- **Node.js**: 24+ (`.nvmrc` 파일 참조)
+- **pnpm**: 최신 버전
+- **uv**: Python 패키지 관리자
+
+Python과 Node 버전 관리를 위해 `pyenv`와 `nvm` 사용을 권장합니다:
+
+```bash
+# Python 버전 설정 (pyenv 사용 시)
+pyenv install 3.12
+pyenv local 3.12
+
+# Node 버전 설정 (nvm 사용 시)
+nvm install 24
+nvm use 24
+```
+
 ### 의존성 설치
 
 ```bash
@@ -42,11 +61,24 @@ pnpm install
 
 ### 환경 변수 구성
 
+먼저 `.env.example` 파일들을 복사하여 실제 환경 변수 파일을 생성합니다:
+
+```bash
+# 백엔드 환경 변수
+cp backend/.env.example backend/.env
+
+# 프론트엔드 환경 변수
+cp frontend/.env.example frontend/.env
+```
+
+그 다음 각 `.env` 파일을 열어 실제 Supabase 프로젝트의 값으로 업데이트합니다.
+
 **백엔드 환경 변수** (`backend/.env`):
 
+- `SHARELEDGER_ENVIRONMENT`: 실행 환경 (development/production)
 - `SHARELEDGER_SUPABASE_URL`: Supabase 프로젝트 REST URL
 - `SHARELEDGER_SUPABASE_SERVICE_ROLE_KEY`: Service Role 키
-- `SHARELEDGER_CORS_ORIGINS`: CORS 허용 Origin (콤마 구분)
+- `SHARELEDGER_CORS_ORIGINS`: CORS 허용 Origin (JSON 배열 형식)
 
 **프론트엔드 환경 변수** (`frontend/.env`):
 
