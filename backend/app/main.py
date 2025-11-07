@@ -13,8 +13,6 @@ from .routers.auth import router as auth_router
 from .routers.books import router as books_router
 from .routers.entries import history_router as entry_history_router
 from .routers.entries import router as entries_router
-from .routers.recurring import item_router as recurring_item_router
-from .routers.recurring import router as recurring_router
 
 logger = logging.getLogger("shareledger.api")
 
@@ -60,8 +58,6 @@ def create_app() -> FastAPI:
     app.include_router(books_router)
     app.include_router(entries_router)
     app.include_router(entry_history_router)
-    app.include_router(recurring_router)
-    app.include_router(recurring_item_router)
 
     return app
 
