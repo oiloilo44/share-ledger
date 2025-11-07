@@ -42,10 +42,12 @@ export function expandEntriesForMonth(entries: Entry[], yearMonth: string): Expa
 
       // 날짜 유효성 검증 (예: 2월 30일 같은 잘못된 날짜 방지)
       const dateObj = new Date(targetDate);
+      const isInRange = entry.end_date === null ? true : targetDate <= entry.end_date;
+
       if (
         dateObj.getMonth() === parseInt(yearMonth.split('-')[1]) - 1 &&
         targetDate >= entry.entry_date &&
-        targetDate <= entry.end_date
+        isInRange
       ) {
         expanded.push({
           ...entry,
@@ -63,8 +65,9 @@ export function expandEntriesForMonth(entries: Entry[], yearMonth: string): Expa
       for (let d = new Date(firstDay); d <= lastDay; d.setDate(d.getDate() + 1)) {
         if (d.getDay() === entry.day_of_week) {
           const dateStr = d.toISOString().split('T')[0];
+          const isInRange = entry.end_date === null ? true : dateStr <= entry.end_date;
 
-          if (dateStr >= entry.entry_date && dateStr <= entry.end_date) {
+          if (dateStr >= entry.entry_date && isInRange) {
             expanded.push({
               ...entry,
               original_id: entry.id,
@@ -150,22 +153,27 @@ export function getNextOccurrenceDate(entry: Entry): string | null {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const endDate = new Date(entry.end_date);
-  if (today > endDate) {
-    return null; // 종료된 반복 내역
+  // end_date가 있고 종료된 경우
+  if (entry.end_date !== null) {
+    const endDate = new Date(entry.end_date);
+    if (today > endDate) {
+      return null; // 종료된 반복 내역
+    }
   }
 
   if (entry.frequency === 'monthly' && entry.day_of_month !== null) {
     // 월간 반복: 이번 달 또는 다음 달의 day_of_month
     const thisMonth = new Date(today.getFullYear(), today.getMonth(), entry.day_of_month);
 
-    if (thisMonth >= today && thisMonth <= endDate) {
+    const isThisMonthValid = entry.end_date === null || thisMonth <= new Date(entry.end_date);
+    if (thisMonth >= today && isThisMonthValid) {
       return thisMonth.toISOString().split('T')[0];
     }
 
     const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, entry.day_of_month);
+    const isNextMonthValid = entry.end_date === null || nextMonth <= new Date(entry.end_date);
 
-    if (nextMonth <= endDate) {
+    if (isNextMonthValid) {
       return nextMonth.toISOString().split('T')[0];
     }
   } else if (entry.frequency === 'weekly' && entry.day_of_week !== null) {
@@ -176,7 +184,8 @@ export function getNextOccurrenceDate(entry: Entry): string | null {
     const nextOccurrence = new Date(today);
     nextOccurrence.setDate(today.getDate() + daysUntilNext);
 
-    if (nextOccurrence <= endDate) {
+    const isValid = entry.end_date === null || nextOccurrence <= new Date(entry.end_date);
+    if (isValid) {
       return nextOccurrence.toISOString().split('T')[0];
     }
   }
