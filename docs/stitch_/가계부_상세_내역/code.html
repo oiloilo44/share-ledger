@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="ko"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>가계부 상세 내역</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&amp;family=Noto+Sans+KR:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<style>
+      .font-display {
+        font-family: 'Manrope', 'Noto Sans KR', sans-serif;
+      }
+    </style>
+<script>tailwind.config = {darkMode: "class", theme: {extend: {colors: {primary: "#000000", "background-light": "#f7f7f7", "background-dark": "#191919", income: "#2563EB", expense: "#DC2626"}, fontFamily: {display: "Manrope"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}}}};</script>
+</head>
+<body class="font-display bg-background-light dark:bg-background-dark text-gray-800 dark:text-gray-200">
+<div class="relative flex min-h-screen w-full flex-col">
+<div class="flex-grow w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+<header class="flex items-center justify-between whitespace-nowrap border-b border-gray-200 dark:border-gray-700 pb-4 mb-6">
+<div class="flex items-center gap-4">
+<div class="flex items-center justify-center size-8 rounded-lg bg-primary/20 text-primary">
+<span class="material-symbols-outlined text-xl">
+                            account_balance_wallet
+                        </span>
+</div>
+<h1 class="text-xl font-bold leading-tight tracking-tight">우리 가족 생활비 통장</h1>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center -space-x-3">
+<div class="overflow-visible">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full flex items-center justify-center size-9 border-2 border-background-light dark:border-background-dark" data-alt="User avatar 1" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCnaV9wVwAWXW6lOZDxsAD_wdx_qXx9CB5S5zQE4VJgB1I2ifhDII0eiThDvLc3EwL_DizryCrCJsG8BcwfU7xBwDPL7HuXsLu2TK1ISohs71mwiKqbtSUwTQ8hGEGHnAzN2CwhIb8fLhQ5t3JOZVz2iwiRNRtQUV18jxpEx7QGSlABq9lWRVYyEqQygvUmFGv8vgXGfyIAjjJve33KPuN7uqcu6SsAriprPOdOCUHgnTvz2iklNDH0VT7d0G8JKPxsxRwB2OvD73k");'></div>
+</div>
+<div class="overflow-visible">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full flex items-center justify-center size-9 border-2 border-background-light dark:border-background-dark" data-alt="User avatar 2" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBEx9SaM2ldA8xchK0-gonmTPNjeQR1MvQY4c6mdyA7Fdlb6-TH9RWq5oLNupCUM16EQ-ITYW7PmEN7W7LaudxYMcGyUj9IYZQ-Z8rBoMdB6aqjG8tT87yyKWCviA6CefRBajcyD_2guBQ4if9jgFDh4I6TfsQRkWZU4HOIsyn1p7XScqGe0XkB4odpmomtJLCQR2LY4Zwq0nfmO3Xe7_wvaV8iZJx78rjXEjPSzPWSXnwD8rlHXSA-nFlrVgo885Rqesa1XQc5ifY");'></div>
+</div>
+<div class="overflow-visible">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full flex items-center justify-center size-9 border-2 border-background-light dark:border-background-dark" data-alt="User avatar 3" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuALzR7ZaIPu0dkYrGb_kpOFZnlhsu4OUEYNXalLJyinVPhbuUxsdQcWyO-g_HLWzp3s_9QHNa-lPDJqPwx8U8ZxaQsCHlhId466_Gr68lWstktq8p6hP8uK8Zh8OVyBDH900fgcBmlAddOkctT-mSw3KAjOL2CbTT9-cybG1WbYQDyrbgp1hrS4exbaNZ5G4zYT_XmpEQkssxgDS7W0WofiqcQ_DxCaOMxfBPBuqNOLOauXmy5Vlhl4vSbj2mM7DKbWdURQfkR5Cm4");'></div>
+</div>
+<div class="overflow-visible">
+<div class="bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-full flex items-center justify-center size-9 border-2 border-background-light dark:border-background-dark text-xs font-semibold">
+                                +2
+                            </div>
+</div>
+</div>
+<button class="flex h-10 w-10 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700">
+<span class="material-symbols-outlined text-xl">
+                            settings
+                        </span>
+</button>
+</div>
+</header>
+<main class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+<div class="lg:col-span-3 flex flex-col gap-6">
+<section class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+<div class="flex min-w-[158px] flex-1 flex-col gap-2 rounded-lg bg-white dark:bg-gray-800 p-6 border border-gray-200 dark:border-gray-700">
+<p class="text-gray-500 dark:text-gray-400 text-base font-medium leading-normal">총 수입</p>
+<p class="text-income tracking-tight text-2xl font-bold leading-tight">₩3,500,000</p>
+</div>
+<div class="flex min-w-[158px] flex-1 flex-col gap-2 rounded-lg bg-white dark:bg-gray-800 p-6 border border-gray-200 dark:border-gray-700">
+<p class="text-gray-500 dark:text-gray-400 text-base font-medium leading-normal">총 지출</p>
+<p class="text-expense tracking-tight text-2xl font-bold leading-tight">₩2,150,000</p>
+</div>
+<div class="flex min-w-[158px] flex-1 flex-col gap-2 rounded-lg bg-white dark:bg-gray-800 p-6 border border-gray-200 dark:border-gray-700">
+<p class="text-gray-500 dark:text-gray-400 text-base font-medium leading-normal">순자산</p>
+<p class="text-gray-800 dark:text-gray-100 tracking-tight text-2xl font-bold leading-tight">₩1,350,000</p>
+</div>
+</section>
+<section class="flex flex-col gap-4">
+<div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+<table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+<thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+<tr>
+<th class="px-6 py-3" scope="col">날짜</th>
+<th class="px-6 py-3" scope="col">카테고리</th>
+<th class="px-6 py-3" scope="col">내용</th>
+<th class="px-6 py-3 text-right" scope="col">금액</th>
+<th class="px-6 py-3 text-center" scope="col">관리</th>
+</tr>
+</thead>
+<tbody>
+<tr class="bg-white dark:bg-gray-800 border-b dark:border-gray-700">
+<td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">11월 25일</td>
+<td class="px-6 py-4">식비</td>
+<td class="px-6 py-4">점심 식사</td>
+<td class="px-6 py-4 text-right font-bold text-expense">-₩12,000</td>
+<td class="px-6 py-4 text-center">
+<div class="flex items-center justify-center gap-1">
+<button class="flex h-8 w-8 items-center justify-center rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"><span class="material-symbols-outlined text-lg">edit</span></button>
+<button class="flex h-8 w-8 items-center justify-center rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"><span class="material-symbols-outlined text-lg">delete</span></button>
+</div>
+</td>
+</tr>
+<tr class="bg-white dark:bg-gray-800 border-b dark:border-gray-700">
+<td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">11월 25일</td>
+<td class="px-6 py-4">교통</td>
+<td class="px-6 py-4">택시비</td>
+<td class="px-6 py-4 text-right font-bold text-expense">-₩5,800</td>
+<td class="px-6 py-4 text-center">
+<div class="flex items-center justify-center gap-1">
+<button class="flex h-8 w-8 items-center justify-center rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"><span class="material-symbols-outlined text-lg">edit</span></button>
+<button class="flex h-8 w-8 items-center justify-center rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"><span class="material-symbols-outlined text-lg">delete</span></button>
+</div>
+</td>
+</tr>
+<tr class="bg-white dark:bg-gray-800 border-b dark:border-gray-700">
+<td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">11월 24일</td>
+<td class="px-6 py-4">월급</td>
+<td class="px-6 py-4">11월 급여</td>
+<td class="px-6 py-4 text-right font-bold text-income">+₩3,000,000</td>
+<td class="px-6 py-4 text-center">
+<div class="flex items-center justify-center gap-1">
+<button class="flex h-8 w-8 items-center justify-center rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"><span class="material-symbols-outlined text-lg">edit</span></button>
+<button class="flex h-8 w-8 items-center justify-center rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"><span class="material-symbols-outlined text-lg">delete</span></button>
+</div>
+</td>
+</tr>
+<tr class="bg-white dark:bg-gray-800">
+<td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">11월 24일</td>
+<td class="px-6 py-4">쇼핑</td>
+<td class="px-6 py-4">온라인 쇼핑</td>
+<td class="px-6 py-4 text-right font-bold text-expense">-₩89,000</td>
+<td class="px-6 py-4 text-center">
+<div class="flex items-center justify-center gap-1">
+<button class="flex h-8 w-8 items-center justify-center rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"><span class="material-symbols-outlined text-lg">edit</span></button>
+<button class="flex h-8 w-8 items-center justify-center rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"><span class="material-symbols-outlined text-lg">delete</span></button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section class="flex flex-col sm:flex-row items-center justify-start gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+<a class="flex items-center gap-2 text-sm font-medium text-primary hover:underline" href="#">
+<span class="material-symbols-outlined">upload_file</span>
+<span>데이터 일괄 추가</span>
+</a>
+<a class="flex items-center gap-2 text-sm font-medium text-primary hover:underline" href="#">
+<span class="material-symbols-outlined">repeat</span>
+<span>반복 내역 설정</span>
+</a>
+</section>
+</div>
+<aside class="lg:col-span-1 flex flex-col gap-6">
+<div class="p-6 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 flex flex-col gap-6">
+<button class="w-full flex h-12 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-primary text-white font-bold hover:bg-primary/90">
+<span class="material-symbols-outlined text-xl">add</span>
+<p>내역 추가</p>
+</button>
+<div class="flex flex-col gap-4">
+<h3 class="text-base font-bold text-gray-800 dark:text-white">기간별 조회</h3>
+<select class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary dark:focus:border-primary">
+<option selected="">2023년 11월</option>
+<option>2023년 10월</option>
+<option>2023년 9월</option>
+</select>
+</div>
+<div class="flex flex-col gap-4">
+<h3 class="text-base font-bold text-gray-800 dark:text-white">카테고리 필터</h3>
+<div class="flex flex-col gap-2">
+<label class="flex items-center gap-2">
+<input checked="" class="rounded border-gray-300 text-primary shadow-sm focus:ring-primary dark:bg-gray-700 dark:border-gray-600" type="checkbox"/>
+<span class="text-sm">전체</span>
+</label>
+<label class="flex items-center gap-2">
+<input class="rounded border-gray-300 text-primary shadow-sm focus:ring-primary dark:bg-gray-700 dark:border-gray-600" type="checkbox"/>
+<span class="text-sm">식비</span>
+</label>
+<label class="flex items-center gap-2">
+<input class="rounded border-gray-300 text-primary shadow-sm focus:ring-primary dark:bg-gray-700 dark:border-gray-600" type="checkbox"/>
+<span class="text-sm">교통</span>
+</label>
+<label class="flex items-center gap-2">
+<input class="rounded border-gray-300 text-primary shadow-sm focus:ring-primary dark:bg-gray-700 dark:border-gray-600" type="checkbox"/>
+<span class="text-sm">월급</span>
+</label>
+<label class="flex items-center gap-2">
+<input class="rounded border-gray-300 text-primary shadow-sm focus:ring-primary dark:bg-gray-700 dark:border-gray-600" type="checkbox"/>
+<span class="text-sm">쇼핑</span>
+</label>
+</div>
+</div>
+</div>
+</aside>
+</main>
+</div>
+</div>
+</body></html>

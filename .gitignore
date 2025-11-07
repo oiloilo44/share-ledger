@@ -7,28 +7,29 @@ __pycache__
 .coverage
 htmlcov/
 *.coverage
+.pytest_cache/
 
 # Node
 node_modules/
 .pnpm-debug.log
+.turbo/
 
 # Build artifacts
 /dist/
 /.parcel-cache/
+frontend/dist/
+backend/dist/
 
-# Environment files
+# Environment files (개발 단계이므로 .env는 추적, .local만 제외)
 .env.local
 .env.*.local
 backend/.env.local
 frontend/.env.local
 
-# Project metadata
-plan.md
-docs/
-
-# IDE
+# IDE (개인 설정만 제외)
 .idea/
-.vscode/
+.vscode/settings.json
+.vscode/launch.json
 .code/
 
 # Development server logs
@@ -37,3 +38,7 @@ docs/
 # Lighthouse/Chrome DevTools temporary files
 undefined:/
 lighthouse.*/
+
+# OS files
+.DS_Store
+Thumbs.db

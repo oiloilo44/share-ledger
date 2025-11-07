@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="ko"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Web Ledger Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {primary: "#000000", "background-light": "#f7f7f7", "background-dark": "#191919"}, fontFamily: {display: "Manrope"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}}}};</script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings:
+      'FILL' 0,
+      'wght' 400,
+      'GRAD' 0,
+      'opsz' 24
+    }
+  </style>
+</head>
+<body class="font-display">
+<div class="relative flex h-auto min-h-screen w-full flex-col bg-background-light dark:bg-background-dark overflow-x-hidden">
+<div class="layout-container flex h-full grow flex-col">
+<div class="px-4 sm:px-8 md:px-16 lg:px-24 xl:px-40 flex flex-1 justify-center py-5">
+<div class="layout-content-container flex flex-col max-w-[960px] flex-1">
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-white/10 dark:border-b-[#244732] px-4 sm:px-10 py-3">
+<div class="flex items-center gap-4 text-black dark:text-white">
+<div class="size-4">
+<svg fill="currentColor" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M6 6H42L36 24L42 42H6L12 24L6 6Z" fill="currentColor"></path>
+</svg>
+</div>
+<h2 class="text-black dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">Web Ledger</h2>
+</div>
+<div class="flex flex-1 justify-end items-center gap-4 sm:gap-6">
+<button class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-black text-sm font-bold leading-normal tracking-[0.015em] gap-2">
+<span class="material-symbols-outlined">add</span>
+<span class="truncate">새 가계부 생성</span>
+</button>
+<button class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 w-10 bg-black/5 dark:bg-[#244732] text-black dark:text-white gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0">
+<span class="material-symbols-outlined text-black dark:text-white">settings</span>
+</button>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10" data-alt="User avatar image" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuB8Qf60UJ4PlFSpPr04iE77xn55GtrbojuDgcoI8iQkxUdisMY5yXrybkMa2FlwPY4IBGlFnryDEjODlIiZXGVe3tDb8XjPaLfU-1i6qZTvsaZPW24cZtVrvAU3xtaNuAcb3IzU4zQqINcGU_RHzDqoJQXBDChtsc4SNGnAjQ5ooHe4HHdzeyZP3EPktusLtNGvxJ4EHwn1NojaMWji0hBIQNPcSfjohxlsV1GjxYSfSMT55XFuR7noNFb6JU_vDxDVA2pymdCL9t4");'></div>
+</div>
+</header>
+<main class="flex flex-col gap-4 py-6">
+<div class="grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-6 p-4">
+<div class="relative flex flex-col gap-4 p-4 rounded-xl bg-black/5 dark:bg-[#244732]/40 transition-all hover:shadow-lg hover:-translate-y-1">
+<button class="absolute top-3 right-3 flex items-center justify-center w-8 h-8 rounded-full bg-black/10 dark:bg-black/20 hover:bg-black/20 dark:hover:bg-black/30 text-black/60 dark:text-white/70">
+<span class="material-symbols-outlined text-xl">settings</span>
+</button>
+<div class="flex flex-col gap-2">
+<p class="text-black dark:text-white text-lg font-bold leading-normal">개인 저축</p>
+<div class="flex items-center gap-2">
+<img alt="User avatar" class="inline-block h-6 w-6 rounded-full ring-2 ring-background-light dark:ring-background-dark" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCdwZvzD013668Nig5A1bo9DpZQ6rOof7R-zQgAbQ30NJJ4UTRBS1K_FM7F5-hyBIeIN3mYZeZ1w4OlKAN_-eyEr0uFZDDd6XfuaUFdto-ndLts1g1OiV6NEgkIx1oCKHxZrdBPW9jOJFdUlV-kBp3EDpp0PMOIyUgNpA0sdkgr4OConznl6jGtLPQTLEzp__iW6x90aD5RlhTcOUaPeRjs-yAvozyNF7SVwhTzr-7veHrPoN9fbU2WL5W16zhBwdh53Hy0l5j9gfo"/>
+<p class="text-black/80 dark:text-white/90 text-sm font-medium leading-normal">김민준 (소유자)</p>
+</div>
+<p class="text-black/60 dark:text-[#93c8a8] text-sm font-normal leading-normal">최근 업데이트: 2023년 10월 27일</p>
+</div>
+</div>
+<div class="relative flex flex-col gap-4 p-4 rounded-xl bg-black/5 dark:bg-[#244732]/40 transition-all hover:shadow-lg hover:-translate-y-1">
+<button class="absolute top-3 right-3 flex items-center justify-center w-8 h-8 rounded-full bg-black/10 dark:bg-black/20 hover:bg-black/20 dark:hover:bg-black/30 text-black/60 dark:text-white/70">
+<span class="material-symbols-outlined text-xl">settings</span>
+</button>
+<div class="flex flex-col gap-2">
+<p class="text-black dark:text-white text-lg font-bold leading-normal">제주도 가족 여행</p>
+<div class="flex items-center gap-2">
+<img alt="User avatar" class="inline-block h-6 w-6 rounded-full ring-2 ring-background-light dark:ring-background-dark" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDSNsfVbXgkV6ssdBgxqhM4JLNq95r7zPogMCFGilDxA42JsS14EYufG1PYR-NV1OX6bndxhHRSw0y7jUMPRo6z3poMtwR3Y4b8PHz7_gvol9X0ykao6aDH3x5cztjmbbNuZ_27dAVA2v6tn5z_-7qk1VaUpjg4VKYSrvCK64Yg90kXIEnyGy4czGyn2Q5GShnp5GH0Gi03sCk7KLsHNN43RVQk5P237iwOUwHZoRNd8vmKHBMkLdZa05WozGsG7jpUbxGxNarMX_Y"/>
+<p class="text-black/80 dark:text-white/90 text-sm font-medium leading-normal">이서연 (소유자)</p>
+</div>
+<p class="text-black/60 dark:text-[#93c8a8] text-sm font-normal leading-normal">최근 업데이트: 2023년 10월 26일</p>
+</div>
+</div>
+<div class="relative flex flex-col gap-4 p-4 rounded-xl bg-black/5 dark:bg-[#244732]/40 transition-all hover:shadow-lg hover:-translate-y-1">
+<button class="absolute top-3 right-3 flex items-center justify-center w-8 h-8 rounded-full bg-black/10 dark:bg-black/20 hover:bg-black/20 dark:hover:bg-black/30 text-black/60 dark:text-white/70">
+<span class="material-symbols-outlined text-xl">settings</span>
+</button>
+<div class="flex flex-col gap-2">
+<p class="text-black dark:text-white text-lg font-bold leading-normal">아파트 관리비</p>
+<div class="flex items-center gap-2">
+<img alt="User avatar" class="inline-block h-6 w-6 rounded-full ring-2 ring-background-light dark:ring-background-dark" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA-P3LM0GWMt_6am_IZ_ZxS5EgicZ6YdoDHAV4IkUaeS9VlqCHtM82QNZuJYdW6XE1ivi3Yb_6udedJbgCJxZcmCfVLeP3NWOji9VyHMkSi2tBX0JH4Kn6m1dHGIMP6RzirIQawt_GUVg80FXE6uSKu9McqznPEgQINrV3esMs8xqp8wNxoOrBWtnSB9nW3tNAqLPSJGMtmdw8cr2O2tlAZza3fJta2AOoNPD7wwf23Bev00S8wt3cFnDDws7PG1xXCgnZhoQFTgZI"/>
+<p class="text-black/80 dark:text-white/90 text-sm font-medium leading-normal">박서준 (소유자)</p>
+</div>
+<p class="text-black/60 dark:text-[#93c8a8] text-sm font-normal leading-normal">최근 업데이트: 2023년 10월 25일</p>
+</div>
+</div>
+<div class="relative flex flex-col gap-4 p-4 rounded-xl bg-black/5 dark:bg-[#244732]/40 transition-all hover:shadow-lg hover:-translate-y-1">
+<button class="absolute top-3 right-3 flex items-center justify-center w-8 h-8 rounded-full bg-black/10 dark:bg-black/20 hover:bg-black/20 dark:hover:bg-black/30 text-black/60 dark:text-white/70">
+<span class="material-symbols-outlined text-xl">settings</span>
+</button>
+<div class="flex flex-col gap-2">
+<p class="text-black dark:text-white text-lg font-bold leading-normal">사이드 프로젝트 펀드</p>
+<div class="flex items-center gap-2">
+<img alt="User avatar" class="inline-block h-6 w-6 rounded-full ring-2 ring-background-light dark:ring-background-dark" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCdwZvzD013668Nig5A1bo9DpZQ6rOof7R-zQgAbQ30NJJ4UTRBS1K_FM7F5-hyBIeIN3mYZeZ1w4OlKAN_-eyEr0uFZDDd6XfuaUFdto-ndLts1g1OiV6NEgkIx1oCKHxZrdBPW9jOJFdUlV-kBp3EDpp0PMOIyUgNpA0sdkgr4OConznl6jGtLPQTLEzp__iW6x90aD5RlhTcOUaPeRjs-yAvozyNF7SVwhTzr-7veHrPoN9fbU2WL5W16zhBwdh53Hy0l5j9gfo"/>
+<p class="text-black/80 dark:text-white/90 text-sm font-medium leading-normal">김민준 (소유자)</p>
+</div>
+<p class="text-black/60 dark:text-[#93c8a8] text-sm font-normal leading-normal">최근 업데이트: 2023년 10월 22일</p>
+</div>
+</div>
+<div class="relative flex flex-col gap-4 p-4 rounded-xl bg-black/5 dark:bg-[#244732]/40 transition-all hover:shadow-lg hover:-translate-y-1">
+<button class="absolute top-3 right-3 flex items-center justify-center w-8 h-8 rounded-full bg-black/10 dark:bg-black/20 hover:bg-black/20 dark:hover:bg-black/30 text-black/60 dark:text-white/70">
+<span class="material-symbols-outlined text-xl">settings</span>
+</button>
+<div class="flex flex-col gap-2">
+<p class="text-black dark:text-white text-lg font-bold leading-normal">스터디 그룹 회비</p>
+<div class="flex items-center gap-2">
+<img alt="User avatar" class="inline-block h-6 w-6 rounded-full ring-2 ring-background-light dark:ring-background-dark" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDSNsfVbXgkV6ssdBgxqhM4JLNq95r7zPogMCFGilDxA42JsS14EYufG1PYR-NV1OX6bndxhHRSw0y7jUMPRo6z3poMtwR3Y4b8PHz7_gvol9X0ykao6aDH3x5cztjmbbNuZ_27dAVA2v6tn5z_-7qk1VaUpjg4VKYSrvCK64Yg90kXIEnyGy4czGyn2Q5GShnp5GH0Gi03sCk7KLsHNN43RVQk5P237iwOUwHZoRNd8vmKHBMkLdZa05WozGsG7jpUbxGxNarMX_Y"/>
+<p class="text-black/80 dark:text-white/90 text-sm font-medium leading-normal">이서연 (소유자)</p>
+</div>
+<p class="text-black/60 dark:text-[#93c8a8] text-sm font-normal leading-normal">최근 업데이트: 2023년 10월 20일</p>
+</div>
+</div>
+<div class="relative flex flex-col gap-4 p-4 rounded-xl bg-black/5 dark:bg-[#244732]/40 transition-all hover:shadow-lg hover:-translate-y-1">
+<button class="absolute top-3 right-3 flex items-center justify-center w-8 h-8 rounded-full bg-black/10 dark:bg-black/20 hover:bg-black/20 dark:hover:bg-black/30 text-black/60 dark:text-white/70">
+<span class="material-symbols-outlined text-xl">settings</span>
+</button>
+<div class="flex flex-col gap-2">
+<p class="text-black dark:text-white text-lg font-bold leading-normal">결혼 준비 자금</p>
+<div class="flex items-center gap-2">
+<img alt="User avatar" class="inline-block h-6 w-6 rounded-full ring-2 ring-background-light dark:ring-background-dark" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA-P3LM0GWMt_6am_IZ_ZxS5EgicZ6YdoDHAV4IkUaeS9VlqCHtM82QNZuJYdW6XE1ivi3Yb_6udedJbgCJxZcmCfVLeP3NWOji9VyHMkSi2tBX0JH4Kn6m1dHGIMP6RzirIQawt_GUVg80FXE6uSKu9McqznPEgQINrV3esMs8xqp8wNxoOrBWtnSB9nW3tNAqLPSJGMtmdw8cr2O2tlAZza3fJta2AOoNPD7wwf23Bev00S8wt3cFnDDws7PG1xXCgnZhoQFTgZI"/>
+<p class="text-black/80 dark:text-white/90 text-sm font-medium leading-normal">박서준 (소유자)</p>
+</div>
+<p class="text-black/60 dark:text-[#93c8a8] text-sm font-normal leading-normal">최근 업데이트: 2023년 10월 18일</p>
+</div>
+</div>
+</div>
+</main>
+</div>
+</div>
+</div>
+</div>
+</body></html>
