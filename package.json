@@ -1,0 +1,24 @@
+{
+  "name": "share-ledger",
+  "private": true,
+  "packageManager": "pnpm@10.20.0",
+  "scripts": {
+    "format": "pnpm -r format",
+    "lint": "pnpm -r lint",
+    "test": "pnpm -r test",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^4.0.7",
+    "husky": "^9.1.6",
+    "lint-staged": "^15.2.8"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": [
+      "pnpm --filter frontend exec -- eslint --fix"
+    ],
+    "*.{json,md,yml,yaml}": [
+      "pnpm --filter frontend exec -- prettier --write"
+    ]
+  }
+}

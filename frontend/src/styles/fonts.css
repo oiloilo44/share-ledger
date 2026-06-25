@@ -1,0 +1,21 @@
+/**
+ * Pretendard Variable 폰트 로컬 호스팅
+ * https://github.com/orioncactus/pretendard
+ */
+
+@font-face {
+  font-family: 'Pretendard Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 45 920;
+  src:
+    local('Pretendard Variable'),
+    url('/fonts/PretendardVariable.woff2') format('woff2-variations');
+}
+
+/**
+ * font-display: swap
+ * - 폰트가 로드되기 전에 시스템 폰트를 먼저 보여줌
+ * - 폰트 로드 후 교체 (FOUT - Flash of Unstyled Text)
+ * - LCP(Largest Contentful Paint) 개선
+ */

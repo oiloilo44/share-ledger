@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="ko"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>대량 거래 내역 추가</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Noto+Sans+KR:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<script>tailwind.config = {darkMode: "class", theme: {extend: {colors: {primary: "#000000", "background-light": "#f7f7f7", "background-dark": "#191919", "text-light": "#1C1C1E", "text-dark": "#E5E5E7", "subtext-light": "#666666", "subtext-dark": "#8E8E93", "border-light": "#E5E5E7", "border-dark": "#3A3A3C", "card-light": "#FFFFFF", "card-dark": "#2C2C2E", success: "#2ECC71", error: "#E74C3C"}, fontFamily: {display: "Manrope"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}}}};</script>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-text-light dark:text-text-dark">
+<div class="relative flex min-h-screen w-full flex-col">
+<header class="sticky top-0 z-10 flex items-center justify-between whitespace-nowrap border-b border-border-light dark:border-border-dark bg-card-light/80 dark:bg-card-dark/80 backdrop-blur-sm px-6 py-3 md:px-10">
+<div class="flex items-center gap-4">
+<div class="size-6 text-primary">
+<svg fill="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-12h2v4h-2zm0 6h2v2h-2z"></path>
+</svg>
+</div>
+<h2 class="text-lg font-bold">가계부 서비스</h2>
+</div>
+<div class="flex items-center gap-4">
+<button class="flex h-10 w-10 cursor-pointer items-center justify-center overflow-hidden rounded-lg bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark hover:bg-border-light dark:hover:bg-border-dark">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="flex h-10 w-10 cursor-pointer items-center justify-center overflow-hidden rounded-lg bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark hover:bg-border-light dark:hover:bg-border-dark">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="size-10 rounded-full bg-cover bg-center bg-no-repeat" data-alt="User profile picture" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCOH9nqakw-isMIUQQpmZNk-4xTdeFK9n5J6XKxnd_myafKm8l5KECfHqyPgh4DIBblXuO_G3kp2KHdBOF847kI6HOxmDZwPZFDs4yklYOsksJ_-OK0ljFzIYCLmSXwkf6nhconpJP0JFED5AqxDhRLsJHwqFCzKCYz6WowdOMIs0V5RsAQ7wDSzd3I_JAU6uCYXypzCKK8WDj4wOTdIe0O6YjcAl2LKpbn513eoPRlWSHT_CZz3Xp7U1LR3-knsxpyj6aagnkDDqs");'></div>
+</div>
+</header>
+<main class="flex flex-1 justify-center p-4 sm:p-6 md:p-10">
+<div class="flex w-full max-w-4xl flex-col gap-8">
+<div class="flex flex-wrap items-baseline justify-between gap-3">
+<div class="flex flex-col gap-2">
+<h1 class="text-3xl font-black tracking-tight sm:text-4xl">대량 내역 추가</h1>
+<p class="text-subtext-light dark:text-subtext-dark">엑셀 또는 구글 시트에서 복사한 데이터를 붙여넣어 여러 내역을 한번에 추가하세요.</p>
+</div>
+</div>
+<div class="flex flex-col gap-4 rounded-lg border border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark p-6">
+<div class="flex flex-col gap-2">
+<label class="text-base font-medium" for="paste-area">데이터 입력 형식</label>
+<p class="text-sm text-subtext-light dark:text-subtext-dark">
+                            '<strong class="font-semibold text-text-light dark:text-text-dark">날짜, 내용, 금액, 카테고리</strong>' 순서로, 각 항목은 탭으로 구분하여 입력해주세요.
+                        </p>
+</div>
+<textarea class="w-full flex-1 resize-none rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark p-4 text-base placeholder:text-subtext-light dark:placeholder:text-subtext-dark focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/50" id="paste-area" placeholder="이곳에 데이터를 붙여넣으세요.
+예: 2023-10-27	점심식사	10000	식비" rows="10"></textarea>
+<div class="flex flex-col-reverse items-center justify-start gap-3 pt-2 sm:flex-row">
+<button class="flex h-12 w-full min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg bg-background-light dark:bg-card-dark px-6 text-base font-bold text-text-light dark:text-text-dark hover:bg-border-light dark:hover:bg-border-dark sm:w-auto">
+<span class="truncate">미리보기</span>
+</button>
+<button class="flex h-12 w-full min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg bg-primary px-6 text-base font-bold text-white hover:bg-primary/90 sm:w-auto">
+<span class="truncate">내역 추가</span>
+</button>
+</div>
+</div>
+<div class="flex flex-col gap-4">
+<h3 class="text-xl font-bold">미리보기</h3>
+<div class="overflow-x-auto rounded-lg border border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark">
+<table class="min-w-full table-auto text-left text-sm">
+<thead class="border-b border-border-light dark:border-border-dark text-subtext-light dark:text-subtext-dark">
+<tr>
+<th class="px-4 py-3 font-medium">날짜</th>
+<th class="px-4 py-3 font-medium">내용</th>
+<th class="px-4 py-3 font-medium text-right">금액</th>
+<th class="px-4 py-3 font-medium">카테고리</th>
+<th class="px-4 py-3 font-medium">상태</th>
+</tr>
+</thead>
+<tbody>
+<tr class="border-b border-border-light dark:border-border-dark">
+<td class="px-4 py-3">2023-10-28</td>
+<td class="px-4 py-3">저녁 장보기</td>
+<td class="px-4 py-3 text-right">35000</td>
+<td class="px-4 py-3">식비</td>
+<td class="px-4 py-3 text-success flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">check_circle</span> 확인
+                                    </td>
+</tr>
+<tr class="border-b border-border-light dark:border-border-dark bg-error/10 text-error">
+<td class="px-4 py-3">2023-10-28</td>
+<td class="px-4 py-3">문화상품권</td>
+<td class="px-4 py-3 text-right">10000원</td>
+<td class="px-4 py-3">문화생활</td>
+<td class="px-4 py-3 flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">cancel</span> 금액 오류
+                                    </td>
+</tr>
+<tr class="border-b border-border-light dark:border-border-dark">
+<td class="px-4 py-3">2023-10-29</td>
+<td class="px-4 py-3">영화 관람</td>
+<td class="px-4 py-3 text-right">15000</td>
+<td class="px-4 py-3">문화생활</td>
+<td class="px-4 py-3 text-success flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">check_circle</span> 확인
+                                    </td>
+</tr>
+<tr class="bg-error/10 text-error">
+<td class="px-4 py-3">2023/10/30</td>
+<td class="px-4 py-3">커피</td>
+<td class="px-4 py-3 text-right">4500</td>
+<td class="px-4 py-3">식비</td>
+<td class="px-4 py-3 flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">cancel</span> 날짜 형식 오류
+                                    </td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

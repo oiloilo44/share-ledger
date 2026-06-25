@@ -1,0 +1,54 @@
+[project]
+name = "share-ledger-backend"
+version = "0.1.0"
+description = "ShareLedger backend service"
+readme = "README.md"
+authors = [
+    { name = "ShareLedger Team", email = "dev@shareledger.app" },
+]
+requires-python = ">=3.11,<3.12"
+dependencies = [
+    "fastapi==0.120.3",
+    "uvicorn[standard]==0.38.0",
+    "pydantic-settings==2.6.1",
+    "supabase==2.3.1",
+    "httpx==0.24.1",
+    "email-validator==2.1.0.post1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "black==25.9.0",
+    "ruff==0.14.3",
+    "pytest==8.4.2",
+    "pytest-dotenv==0.5.2",
+    "pytest-cov==7.0.0",
+]
+
+[tool.black]
+line-length = 100
+target-version = ["py311"]
+
+[tool.isort]
+profile = "black"
+line_length = 100
+
+[tool.mypy]
+python_version = "3.11"
+warn_unused_configs = true
+warn_unused_ignores = true
+
+[tool.pytest.ini_options]
+markers = [
+    "integration: Supabase 실환경과 상호작용하는 테스트",
+]
+env_files = [
+    ".env"
+]
+pythonpath = [
+    "."
+]
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"

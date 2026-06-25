@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="ko"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>자산 관리 서비스</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<style>
+        .form-input:focus {
+            outline: none;
+            box-shadow: none;
+        }
+        .peer.popup-trigger:checked ~ .popup-overlay {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .peer.popup-trigger:checked ~ .popup-overlay .popup-content {
+            transform: scale(1) translateY(0);
+        }
+    </style>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {primary: "#000000", "background-light": "#f7f7f7", "background-dark": "#191919"}, fontFamily: {display: "Manrope"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}}}};</script>
+</head>
+<body class="font-display">
+<div class="relative flex min-h-screen w-full flex-col bg-background-light dark:bg-background-dark group/design-root overflow-x-hidden">
+<div class="absolute inset-0 z-0">
+<div class="h-full w-full bg-cover bg-center opacity-10 dark:opacity-20" data-alt="A person using a calculator and writing in a notebook, representing financial management." style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuApEDL9rGsSKBYBiO1gI6dhnixR9wra4Q9Gzy7AgyWDJspDu5IW8jpATS7wFF7ccuL9oQXdZW_aSca9ddjItCkAO4OfaVaM4hGzCnqi_SdSvREAq1hlzXHsZckGVwHSp6_vF9yhQRQm--vxAmAhs3jFiS9wfMmunsJ3XUlhQ8oQL9S1TCfymkJj9jOU_VIh3_yhab6D8cKIDTw6TgisZq7ApdOBFrS8W8d3UC-BIzvixR0MsUgfz5hNNZqrZQRhsUldlESFwljXDco");'></div>
+</div>
+<div class="relative z-10 flex h-full grow flex-col">
+<header class="flex h-16 shrink-0 items-center px-4 md:px-6">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-3xl">account_balance_wallet</span>
+<span class="text-xl font-bold text-slate-800 dark:text-white">자산관리</span>
+</div>
+</header>
+<main class="flex flex-1 items-center justify-center p-4">
+<div class="w-full max-w-md rounded-xl border border-slate-200/50 dark:border-slate-800/50 bg-white/50 dark:bg-background-dark/50 p-6 shadow-lg backdrop-blur-md sm:p-8">
+<div class="flex flex-col gap-6">
+<div>
+<h1 class="text-slate-900 dark:text-white text-3xl font-bold leading-tight tracking-tighter">로그인</h1>
+<p class="text-slate-600 dark:text-slate-400 mt-1">이메일과 비밀번호로 로그인하세요.</p>
+</div>
+<form class="flex flex-col gap-4">
+<label class="flex flex-col w-full">
+<p class="text-slate-700 dark:text-slate-300 text-sm font-medium pb-2">이메일</p>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-slate-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-primary h-12 placeholder:text-slate-400 dark:placeholder:text-slate-500 px-4 text-base font-normal leading-normal" placeholder="이메일 주소를 입력하세요" type="email" value=""/>
+</label>
+<label class="flex flex-col w-full">
+<p class="text-slate-700 dark:text-slate-300 text-sm font-medium pb-2">비밀번호</p>
+<div class="relative flex w-full flex-1 items-stretch">
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-slate-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-primary h-12 placeholder:text-slate-400 dark:placeholder:text-slate-500 px-4 text-base font-normal leading-normal" placeholder="비밀번호를 입력하세요" type="password" value=""/>
+</div>
+</label>
+<div class="flex flex-col gap-4 mt-2">
+<button class="flex items-center justify-center text-center font-semibold text-base h-12 px-6 rounded-lg bg-primary text-background-dark w-full hover:opacity-90 transition-opacity" type="submit">로그인</button>
+<button class="flex items-center justify-center text-center font-medium text-base h-12 px-6 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 w-full hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors" type="button">회원가입</button>
+</div>
+</form>
+<div class="text-center">
+<input class="hidden peer popup-trigger" id="forgot-password-popup" type="checkbox"/>
+<label class="cursor-pointer text-sm text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-colors" for="forgot-password-popup">비밀번호를 잊으셨나요?</label>
+<div class="popup-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 opacity-0 pointer-events-none transition-opacity duration-300">
+<div class="popup-content w-full max-w-sm rounded-xl bg-white dark:bg-slate-800 p-6 text-center shadow-lg transform scale-95 -translate-y-2 transition-transform duration-300">
+<h3 class="text-lg font-bold text-slate-800 dark:text-white">비밀번호 찾기</h3>
+<p class="mt-2 text-sm text-slate-600 dark:text-slate-300">비밀번호를 재설정하려면 관리자에게 문의해주세요.</p>
+<p class="mt-1 text-sm text-slate-500 dark:text-slate-400">문의: admin@example.com</p>
+<label class="mt-6 inline-block w-full cursor-pointer rounded-lg bg-primary px-6 py-2.5 text-center font-semibold text-background-dark hover:opacity-90 transition-opacity" for="forgot-password-popup">확인</label>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</div>
+</body></html>

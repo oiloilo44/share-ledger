@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="ko"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>멤버 관리</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Noto+Sans+KR:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {primary: "#000000", "background-light": "#f7f7f7", "background-dark": "#191919"}, fontFamily: {display: "Manrope"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}}}};</script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings:
+        'FILL' 0,
+        'wght' 400,
+        'GRAD' 0,
+        'opsz' 24
+      }
+    </style>
+</head>
+<body class="font-display bg-background-light dark:bg-background-dark">
+<div class="relative flex h-auto min-h-screen w-full flex-col dark group/design-root overflow-x-hidden">
+<div class="layout-container flex h-full grow flex-col">
+<div class="px-4 md:px-10 lg:px-40 flex flex-1 justify-center py-5">
+<div class="layout-content-container flex flex-col max-w-5xl flex-1">
+<header class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 py-6 px-2">
+<div class="flex flex-col">
+<h1 class="text-white text-3xl font-bold leading-tight tracking-[-0.015em]">나의 첫 가계부</h1>
+<p class="text-base font-normal leading-normal text-white/70">멤버 관리</p>
+</div>
+<button class="flex cursor-pointer items-center justify-center overflow-hidden rounded-lg bg-[#1a3224] text-white/90 gap-2 text-sm font-medium leading-normal tracking-[0.015em] min-w-[120px] px-4 py-2 hover:bg-[#244732] transition-colors">
+<span class="material-symbols-outlined text-base">arrow_back</span>
+<span>가계부 목록으로 돌아가기</span>
+</button>
+</header>
+<main class="flex-1 p-2 md:p-4">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-4">
+<div class="bg-[#1a3224] rounded-xl p-6 h-fit">
+<h2 class="text-white text-[22px] font-bold leading-tight tracking-[-0.015em] pb-3">새로운 멤버 초대하기</h2>
+<p class="text-[#93c8a8] text-base font-normal leading-normal pb-5">초대된 사용자는 가계부의 내역을 함께 보고 편집할 수 있습니다.</p>
+<div class="flex flex-col gap-4">
+<label class="flex flex-col w-full">
+<p class="text-white text-base font-medium leading-normal pb-2">이메일 또는 사용자 ID</p>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#346548] bg-[#112117] focus:border-primary h-14 placeholder:text-[#6a8b78] p-[15px] text-base font-normal leading-normal transition-all" placeholder="초대할 사용자의 이메일 또는 ID를 입력하세요" value=""/>
+</label>
+<label class="flex flex-col w-full">
+<p class="text-white text-base font-medium leading-normal pb-2">역할</p>
+<div class="relative w-full sm:w-1/2">
+<select class="form-select w-full appearance-none cursor-pointer rounded-lg bg-[#112117] text-white border border-[#346548] h-14 pl-4 pr-10 focus:ring-2 focus:ring-primary/50 focus:border-primary focus:outline-none">
+<option>Editor</option>
+<option>Owner</option>
+</select>
+<span class="material-symbols-outlined text-[#93c8a8] absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">expand_more</span>
+</div>
+</label>
+<button class="flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg h-14 bg-primary text-background-dark gap-2 text-base font-bold leading-normal tracking-[0.015em] min-w-[120px] px-6 hover:bg-primary/90 transition-colors">
+<span>초대하기</span>
+<span class="material-symbols-outlined">send</span>
+</button>
+</div>
+</div>
+<div>
+<h2 class="text-white text-[22px] font-bold leading-tight tracking-[-0.015em] pb-4">공유 멤버 목록</h2>
+<div class="bg-[#1a3224] rounded-xl overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left text-white/90">
+<thead class="bg-[#244732]">
+<tr>
+<th class="p-4 text-sm font-semibold tracking-wider">이름</th>
+<th class="p-4 text-sm font-semibold tracking-wider">이메일</th>
+<th class="p-4 text-sm font-semibold tracking-wider">역할</th>
+<th class="p-4 text-sm font-semibold tracking-wider text-right">액션</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-[#244732]">
+<tr>
+<td class="p-4 whitespace-nowrap">김민준</td>
+<td class="p-4 whitespace-nowrap">minjun.kim@example.com</td>
+<td class="p-4"><span class="bg-gray-700 text-gray-300 text-xs font-bold px-3 py-1 rounded-full">Owner</span></td>
+<td class="p-4 text-right">
+<button aria-label="멤버 제외" class="text-white/40 cursor-not-allowed" disabled=""><span class="material-symbols-outlined">delete</span></button>
+</td>
+</tr>
+<tr>
+<td class="p-4 whitespace-nowrap">이서연</td>
+<td class="p-4 whitespace-nowrap">seoyeon.lee@example.com</td>
+<td class="p-4">
+<div class="relative">
+<select class="form-select appearance-none cursor-pointer rounded-md bg-[#244732] text-white border-none py-1 pl-3 pr-8 focus:ring-2 focus:ring-primary/50 focus:outline-none text-xs">
+<option selected="">Editor</option>
+<option>Owner</option>
+</select>
+<span class="material-symbols-outlined text-[#93c8a8] absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-base">expand_more</span>
+</div>
+</td>
+<td class="p-4 text-right">
+<button aria-label="멤버 제외" class="text-white/80 hover:text-red-500 transition-colors"><span class="material-symbols-outlined">delete</span></button>
+</td>
+</tr>
+<tr class="opacity-70">
+<td class="p-4 whitespace-nowrap">박지훈</td>
+<td class="p-4 whitespace-nowrap">jihun.park@example.com</td>
+<td class="p-4"><span class="bg-yellow-900/50 text-yellow-300 text-xs font-bold px-3 py-1 rounded-full">초대 대기 중</span></td>
+<td class="p-4 text-right">
+<button aria-label="초대 취소" class="text-white/80 hover:text-red-500 transition-colors"><span class="material-symbols-outlined">cancel</span></button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="mt-6 flex items-start gap-3 p-4 bg-[#1a3224] rounded-lg">
+<span class="material-symbols-outlined text-primary text-xl mt-0.5">info</span>
+<p class="text-[#93c8a8] text-sm">최대 5개의 공유 가계부에 참여할 수 있습니다. 각 멤버는 자신의 참여 한도를 초과하지 않는지 확인해야 합니다.</p>
+</div>
+</div>
+</div>
+</main>
+</div>
+</div>
+</div>
+</div>
+</body></html>
