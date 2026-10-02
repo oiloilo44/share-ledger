@@ -1,66 +1,49 @@
 # ShareLedger 백엔드 아키텍처
 
-## 개요
+FastAPI 라우터는 HTTP 요청·응답을, 서비스는 장부 접근 권한과 데이터 처리를 담당합니다. Supabase Auth로 사용자를 확인하고, 서버 전용 키로 PostgreSQL 테이블과 RPC를 호출합니다.
 
-- 프레임워크: FastAPI
-- 언어: Python 3.11
-- 주요 의존성: `fastapi`, `supabase`, `pydantic-settings`
-- 구성 파일 위치: `backend/app/`
+## 요청 흐름
 
-## 모듈 구조
+1. 브라우저가 Supabase Auth에서 받은 access token을 `Authorization: Bearer …`로 전달합니다.
+2. `services/auth.py`의 `get_current_user()`가 Supabase Auth에 토큰을 확인하고 사용자 모델을 반환합니다.
+3. 장부·거래 서비스가 소유권 또는 멤버십을 확인합니다.
+4. Supabase SDK로 데이터를 조회하거나 SQL RPC로 거래와 이력을 변경합니다. 동기 SDK 호출은 `asyncio.to_thread()`로 분리합니다.
+5. 라우터가 Pydantic 응답 모델로 결과를 반환합니다.
 
-| 모듈               | 책임                                                     |
-| ------------------ | -------------------------------------------------------- |
-| `config.py`        | 환경 변수 로딩, CORS 설정 등 전역 설정 관리              |
-| `db.py`            | Supabase Python 클라이언트 초기화 및 FastAPI 의존성 주입 |
-| `services/auth.py` | Supabase Auth REST API 연동, 토큰 검증 의존성 제공       |
-| `routers/auth.py`  | 인증 관련 라우터(`/auth/*`) 및 요청/응답 스키마 연결     |
-| `schemas/auth.py`  | 인증 도메인 전용 Pydantic 스키마 정의                    |
-| `main.py`          | FastAPI 인스턴스 생성, 미들웨어/라우터/예외 핸들러 등록  |
+## 모듈
 
-### config.py
+| 경로                          | 역할                                                   |
+| ----------------------------- | ------------------------------------------------------ |
+| `app/main.py`                 | 앱 팩토리, CORS, 예외 처리, 라우터 등록                |
+| `app/config.py`               | `SHARELEDGER_` 환경 변수와 실행 디렉터리의 `.env` 로딩 |
+| `app/db.py`                   | 캐시된 Supabase 클라이언트와 의존성 제공               |
+| `app/routers/auth.py`         | 가입·로그인·로그아웃 API                               |
+| `app/routers/books.py`        | 장부와 멤버 관리 API                                   |
+| `app/routers/entries.py`      | 거래, CSV 등록용 일괄 입력, 통계, 이력·복원 API        |
+| `app/services/`               | 인증 연동, 권한 확인, 조회·변경·집계                   |
+| `app/models/`, `app/schemas/` | 요청·응답 모델과 필터                                  |
+| `tests/`                      | 의존성을 대체한 단위·라우터 테스트                     |
+| `tests/integration/`          | 실제 Supabase 사용자·장부·거래 생성 및 정리            |
 
-- `Settings` 클래스는 Pydantic Settings를 사용해 환경 변수를 로드한다.
-- 기본 `.env`, `backend/.env` 파일을 모두 탐색하며, `SHARELEDGER_` 접두사를 사용한다.
-- `cors_origins`는 콤마 구분 문자열을 리스트로 자동 변환한다.
-- `get_settings()` 함수는 LRU 캐시로 인스턴스를 재사용한다.
+`app/routers/recurring.py`와 대응 서비스는 이전 구조의 코드입니다. 현재 앱에는 등록되지 않으며, 반복 정보는 거래 모델의 `frequency`, `end_date`, `day_of_month`, `day_of_week`로 처리합니다.
 
-### db.py
+## 설정과 의존성
 
-- Supabase REST URL과 server key를 기반으로 `create_client()`를 호출한다.
-- `_build_supabase_client()`는 최초 한 번만 초기화되고 이후 캐시된 인스턴스를 반환한다.
-- `get_supabase_client()`는 FastAPI 의존성에서 재사용될 수 있도록 별도 함수로 제공한다.
-- Supabase Python SDK가 사용하는 `gotrue` 클라이언트가 최신 httpx에서 `proxy` 인자를 지원하지 않는 문제를 우회하기 위해 런타임에 패치한다.
+- `get_settings()`와 Supabase 클라이언트는 각각 LRU 캐시로 재사용합니다.
+- `SHARELEDGER_CORS_ORIGINS` 환경 변수는 JSON 배열로 설정합니다. 예: `["http://localhost:5173"]`.
+- `db.py`에는 고정된 Supabase SDK / httpx 조합의 `proxy` 인자 호환 패치가 있습니다. 의존성 버전 변경 시 제거 가능 여부와 클라이언트 초기화를 함께 확인해야 합니다.
+- `/health-check`는 클라이언트 생성만 수행합니다. Supabase에 실제 요청을 보내는 준비 상태 검사는 아닙니다.
+- 브라우저의 로그인·비밀번호 재설정은 Supabase JS SDK를 직접 사용합니다. 백엔드 `/auth/*` 라우트가 모든 브라우저 인증 요청을 중계하는 구조는 아닙니다.
 
-### main.py
+## 거래와 변경 이력
 
-- `create_app()`에서 FastAPI 앱을 생성하고 CORS 미들웨어를 설정한다.
-- `/health-check` 엔드포인트는 Supabase 클라이언트 초기화 가능 여부를 확인하면서 상태를 응답한다.
-- 공통 예외 핸들러:
-  - `RequestValidationError`: 422 상태 코드와 상세 오류 목록 반환.
-  - 일반 `Exception`: 로그 기록 후 500 상태 코드와 표준 메시지 반환.
-- `routers/auth.py`의 라우터를 포함해 인증 관련 엔드포인트를 노출한다.
+거래 생성·수정·삭제·복원은 `infra/migrations/`의 RPC 함수를 호출합니다. 거래 변경과 이력 기록을 한 함수에서 처리해 두 작업이 분리되어 실행되는 상황을 줄입니다. 수정 이력에는 변경 전 값이 저장되고, 삭제 이력은 거래가 없어진 뒤에도 스냅샷을 유지합니다.
 
-### services/auth.py
+이력은 장부별 최신 100건을 보관합니다. 일괄 등록은 행별로 처리하고 성공·실패를 반환하므로, 파일 전체가 하나의 트랜잭션으로 롤백되지는 않습니다.
 
-- Supabase Auth REST 엔드포인트(`/auth/v1/*`)를 호출하기 위해 `httpx.AsyncClient`를 사용한다.
-- 회원가입, 로그인, 로그아웃, 토큰 기반 사용자 조회 기능을 제공한다.
-- FastAPI 의존성 `get_current_user`를 통해 Bearer 토큰을 검증하고 사용자 정보를 반환한다.
+## 현재 경계와 후속 작업
 
-### schemas/auth.py
-
-- Supabase Auth 응답을 내부 모델(`AuthSession`, `SupabaseUser`)로 매핑한다.
-- 요청 본문(`SignUpRequest`, `SignInRequest`, `SignOutRequest`)과 정적 응답(`PasswordHelpResponse`)을 정의한다.
-
-## 의존성 흐름
-
-1. `main.py` → `config.py`: 앱 생성 시 환경 설정을 로드해 CORS, 리스너 설정에 사용.
-2. `main.py` → `db.py`: 헬스 체크 및 향후 라우터에서 Supabase 클라이언트 의존성으로 활용.
-3. `main.py` → `routers/auth.py` → `services/auth.py`: 인증 라우트에서 Supabase Auth 연동 서비스를 호출한다.
-4. `services/auth.py` → `config.py`: Supabase Auth REST 호출에 필요한 URL과 server key를 읽어온다.
-
-## 향후 확장 시 고려사항
-
-- 서비스/라우터 모듈 추가 시 의존성 주입을 위해 `get_supabase_client()`를 FastAPI `Depends`로 사용한다.
-- 인증, 가계부, 내역 등 도메인 서비스는 `services/` 디렉터리로 분리하고, 라우터는 `routers/` 디렉터리에 위치시킨다.
-- 배경 작업(예: 반복 내역 생성)은 Supabase Edge Function 혹은 별도 워커 모듈과 연동한다.
+- 장부 접근 검사는 서비스 계층에 있습니다. SQL에는 RLS 정책이나 RPC 실행 권한 제한이 없으므로, 이 검사만으로 직접 DB 접근에 대한 보호가 완성되지는 않습니다.
+- 서버 통계와 날짜 필터는 저장된 거래의 `entry_date`를 기준으로 합니다. 브라우저의 월별 반복 전개와 계산 경로를 통합해야 합니다.
+- 서비스의 `pg_notify` 호출과 브라우저의 Supabase Broadcast 구독 사이에 전달 계층이 없습니다. 실시간 반영은 추가 구현과 연동 검증이 필요합니다.
+- 인증·장부·거래 라우터 테스트는 외부 서비스를 대체합니다. 실제 DB와의 호환성은 테스트 전용 Supabase에서 통합 테스트로 확인해야 합니다.

@@ -370,13 +370,10 @@ export const ComponentDemoPage = () => {
                       const logs = localStorage.getItem('error_logs');
                       if (logs) {
                         const count = JSON.parse(logs).length;
-                        showToast(
-                          `${count}개의 에러 로그가 저장되어 있습니다.`,
-                          {
-                            severity: 'info',
-                            title: '에러 로그',
-                          },
-                        );
+                        showToast(`${count}개의 에러 로그가 저장되어 있습니다.`, {
+                          severity: 'info',
+                          title: '에러 로그',
+                        });
                       } else {
                         showToast('저장된 에러 로그가 없습니다.', {
                           severity: 'info',

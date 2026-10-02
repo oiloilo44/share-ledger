@@ -106,7 +106,7 @@ function Start-BackendServer {
     $processInfo = New-Object System.Diagnostics.ProcessStartInfo
     $processInfo.FileName = $pythonPath
     $processInfo.Arguments = '-m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000'
-    $processInfo.WorkingDirectory = $RootDir
+    $processInfo.WorkingDirectory = $backendPath
     $processInfo.UseShellExecute = $false
     $processInfo.RedirectStandardOutput = $true
     $processInfo.RedirectStandardError = $true

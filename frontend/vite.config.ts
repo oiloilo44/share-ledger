@@ -116,12 +116,7 @@ export default defineConfig({
     isolate: true,
     // 스레드 풀 최적화
     pool: 'threads',
-    poolOptions: {
-      threads: {
-        maxThreads: 1,
-        minThreads: 1,
-      },
-    },
+    maxWorkers: 1,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html', 'json'],
@@ -137,7 +132,7 @@ export default defineConfig({
     // 의존성 최적화
     deps: {
       optimizer: {
-        web: {
+        client: {
           exclude: ['@storybook/**', '@chromatic-com/**'],
         },
       },

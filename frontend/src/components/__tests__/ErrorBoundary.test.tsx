@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi, type MockInstance } from 'vitest';
 import { ErrorBoundary } from '../ErrorBoundary';
 import { ThemeProvider } from '@mui/material/styles';
 import { createTheme } from '@mui/material/styles';
@@ -16,7 +16,7 @@ const ThrowError = ({ shouldThrow }: { shouldThrow: boolean }) => {
   return <div>No error</div>;
 };
 
-let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
+let consoleErrorSpy: MockInstance<typeof console.error>;
 
 const renderWithTheme = (ui: React.ReactElement) => {
   return render(<ThemeProvider theme={theme}>{ui}</ThemeProvider>);

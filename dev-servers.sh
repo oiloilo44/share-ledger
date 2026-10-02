@@ -69,7 +69,7 @@ start_backend() {
 
   echo "백엔드 서버를 시작합니다..."
   (
-    cd "$ROOT_DIR"
+    cd "$ROOT_DIR/backend"
     nohup "${BACKEND_CMD[@]}" >"$BACKEND_LOG" 2>&1 &
     echo $! >"$BACKEND_PID_FILE"
   )
